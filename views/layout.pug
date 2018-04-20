@@ -1,14 +1,27 @@
 doctype html
-html(lang="en")
-	head
-		meta(charset="UTF-8")
-		meta(http-equiv="X-UA-Compatible", content="IE=edge")
-		meta(name="viewport",content="width=device-width, initial-scale=1")
-		meta(name="description",content="")
-		meta(name="author",content="")
-		link(rel="icon",href="../../favicon.ico")
-		title= title
-		block styles
-			link(rel="stylesheet",href="css/bootstrap.css")
-	body(data-spy="scroll",data-target=".scrollspy")
-		block body
+html(lang="fr")
+  head
+    meta(charset="UTF-8")
+    meta(name="description",content="")
+    meta(name="author",content="")
+    link(rel="icon",href="../../favicon.ico")
+    title mightynetwork | #{title}
+    link(href='/css/jumbotron-narrow.css', rel='stylesheet')
+    link(rel='stylesheet', href='/css/bootstrap.css')
+    link(rel='stylesheet', href='/css/style.css')
+  body(data-spy="scroll",data-target=".scrollspy")
+    .container
+      .header.clearfix
+        nav
+          ul.nav.nav-pills.pull-right
+            li(class=(title == 'Register' ? 'active' : ''))
+              a(href='/users/register') Register
+            li(class=(title == 'Log in' ? 'active' : ''))
+              a(href='/users/login') Log in
+            li(class=(title == 'Members' ? 'active' : ''))
+              a(href='/users/members') Members
+            li(role='logout')
+              a(href='/users/logout').text-muted Log out
+          h3
+            a(href='/') mightyNetwork
+    block content

@@ -1,0 +1,16 @@
+extends layout
+
+block content
+  .container
+    .jumbotron
+      h2 Log in
+      
+      form(action="/users/login", method="POST")
+        .form-group
+          label Pseudo
+          input.form-control(type="text",placeholder="pseudo", name="username")
+        .form-group
+          label Mot de passe
+          input.form-control(type="password",placeholder="*****", name="password")
+        .form-group
+          input(type="submit",placeholder="submit")

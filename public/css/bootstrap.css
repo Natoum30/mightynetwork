@@ -1571,8 +1571,7 @@ pre code {
   overflow-y: scroll;
 }
 .container {
-  padding-right: 15px;
-  padding-left: 15px;
+  padding:15px;
   margin-right: auto;
   margin-left: auto;
 }
@@ -2982,7 +2981,7 @@ select[multiple].form-group-lg .form-control {
 }
 .btn {
   display: inline-block;
-  padding: 6px 12px;
+  padding: 1px;
   margin-bottom: 0;
   font-size: 14px;
   font-weight: normal;
@@ -4876,12 +4875,12 @@ a.badge:focus {
 }
 @media screen and (min-width: 768px) {
   .jumbotron {
-    padding: 48px 0;
+    padding: 10px 0;
   }
   .container .jumbotron,
   .container-fluid .jumbotron {
-    padding-right: 60px;
-    padding-left: 60px;
+    padding-right: 30px;
+    padding-left: 30px;
   }
   .jumbotron h1,
   .jumbotron .h1 {
@@ -4915,9 +4914,9 @@ a.thumbnail.active {
   color: #333;
 }
 .alert {
-  padding: 15px;
-  margin-bottom: 20px;
-  border: 1px solid transparent;
+  padding: 5px;
+  margin-bottom: 5px;
+  border: 1px solid;
   border-radius: 4px;
 }
 .alert h4 {
@@ -4948,7 +4947,13 @@ a.thumbnail.active {
 .alert-success {
   color: #3c763d;
   background-color: #dff0d8;
-  border-color: #d6e9c6;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  border-color: #9ed08a;
+  padding: 5px;
+  margin-bottom: 10px;
+  padding-left: 10px;
+  list-style: none;
 }
 .alert-success hr {
   border-top-color: #c9e2b3;

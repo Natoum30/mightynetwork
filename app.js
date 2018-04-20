@@ -3,11 +3,10 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-//var favicon = require('serve-favicon');
 var logger = require('morgan');
 var session = require('express-session');
-var passport = require('passport');
 var validator = require('express-validator');
+var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var multer = require('multer');
 var upload = multer({dest:'./uploads'});
@@ -15,7 +14,7 @@ var flash = require('connect-flash');
 var mongo = require('mongodb');
 var mongoose = require('mongoose');
 var db = mongoose.connection;
-// var db = mongoose.connect('mongodb://localhost:27017/mightynetwork2');
+var bcrypt = require('bcryptjs');
 
 
 var indexRouter = require('./routes/index');
@@ -34,6 +33,23 @@ app.use(cookieParser());
 app.use(express.static('public'));
 app.use(session({secret:'jaimelechocolat', saveUninitialized:true, resave:true}));
 
+// Validator ?
+app.use(validator({
+  errorFormatter: function(param,msg,value){
+      var namespace = param.split('.'),
+          root =  namespace.shift(),
+          formParam = root;
+    while(namespace.length) {
+      formParam += '[' + namespace.shift() + ']';
+    }
+    return {
+    param : formParam,
+    msg : msg,
+    value : value
+    };
+  }
+}));
+
 // Passport
 app.use(passport.initialize());
 app.use(passport.session());
@@ -45,7 +61,7 @@ app.use(function (request, response, next) {
   next();
 });
 
-// Validator ?
+
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
