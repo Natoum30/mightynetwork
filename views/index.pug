@@ -1,0 +1,20 @@
+extends layout
+append styles	
+	// Custom styles for this template
+	link(href='css/jumbotron-narrow.css', rel='stylesheet')
+block body
+	.container
+		.header.clearfix
+			nav
+				ul.nav.nav-pills.pull-right
+					li.active(role='Register')
+						a(href='/register') Register
+					li(role='login')
+						a(href='/users/login') Login
+					li(role='logout')
+						a(href='/users/logout').text-muted Log out
+			h3: a(href="/") mightyNetwork2
+		.jumbotron
+			h2 Welcome to mightyNetwork
+			p.lead
+				| yipi yipi
