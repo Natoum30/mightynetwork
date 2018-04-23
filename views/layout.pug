@@ -13,14 +13,16 @@ html(lang="fr")
       .header.clearfix
         nav
           ul.nav.nav-pills.pull-right
-            li(class=(title == 'Register' ? 'active' : ''))
-              a(href='/users/register') Register
-            li(class=(title == 'Log in' ? 'active' : ''))
-              a(href='/users/login') Log in
-            li(class=(title == 'Members' ? 'active' : ''))
-              a(href='/users/members') Members
-            li(role='logout')
-              a(href='/users/logout').text-muted Log out
+            if !user
+              li(class=(title == 'Register' ? 'active' : ''))
+                a(href='/users/register') Register
+              li(class=(title == 'Log in' ? 'active' : ''))
+                a(href='/users/login') Log in
+            if user    
+              li(class=(title == 'Members' ? 'active' : ''))
+                a(href='/users/') Members
+              li(role='logout')
+                a(href='/users/logout').text-muted Log out
           h3
             a(href='/') mightyNetwork
     block content

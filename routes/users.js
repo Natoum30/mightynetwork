@@ -5,12 +5,22 @@ var LocalStrategy = require('passport-local').Strategy;
 var User = require('../models/User');
 
 
+
+
 /* GET users listing. */
-router.get('/', function (request, response){
+router.get('/',  ensureAuthenticate, function (request, response){
   response.render('members', {
     title:'Members'
   });
 });
+
+function ensureAuthenticate(request,response,next){
+  if (request.isAuthenticated()){
+    return next();
+  }
+  response.redirect('/users/login');
+}
+
 
 /* Register routes */
 
@@ -19,6 +29,7 @@ router.get('/register', function(request, response) {
     title:'Register'
   });
 });
+
 
 router.post('/register', function(request,response){
   var username = request.body.username;
@@ -44,7 +55,7 @@ if(errors){
   User.createUser(newUser, function(error,user){
     if(error){
       response.render('register',{
-        error:'username not avaible'
+        error:'username not available'
       });
     } else{
     console.log(user);
@@ -56,6 +67,7 @@ if(errors){
   }
 });
 }
+});
 
 
 /* Login routes */
@@ -63,12 +75,13 @@ router.get('/login', function(request, response) {
   response.render('login', {
     title:'Log in'
   });
-});
+  });
+
 
 router.post('/login',
-  passport.authenticate('local',{failureRedirect:'/users/login',failureFlash:'Invalid authentification'}),
+  passport.authenticate('local',{failureRedirect:'/users/login',failureFlash:true}),
   function(request, response) {
-    request.flash('success','You are now logged in');
+    request.flash('alert-success','You are now logged in');
     response.redirect('/');
 });
 
@@ -83,10 +96,11 @@ passport.deserializeUser(function(id, done) {
 });
 
 passport.use(new LocalStrategy(function(username,password,done){
+
 User.getUserByUsername(username, function(error,user){
   if(error) throw error;
   if(!user) {
-    return done(null,false,{message:'unkown user'});
+    return done(null,false,{message:'Invalid authentification'});
   }
 
   User.comparePassword(password,user.password,function(error,isMatch){
@@ -101,6 +115,13 @@ User.getUserByUsername(username, function(error,user){
 })
 );
 
+
+/* Logout route*/
+router.get('/logout',function(request,response){
+  request.logout();
+  request.flash('alert-success','You are now logged out');
+  response.redirect('/users/login');
+});
 /**/
 
 router.get('/users.json', function(request,response){
@@ -108,7 +129,6 @@ router.get('/users.json', function(request,response){
     if (error) throw error;
     response.send(users);
   });
-});
 });
 
 module.exports = router;

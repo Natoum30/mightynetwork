@@ -61,15 +61,18 @@ app.use(function (request, response, next) {
   next();
 });
 
-
+app.get('*', function(request,response,next){
+  response.locals.user = request.user || null;
+  next();
+});
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
 // catch 404 and forward to error handler
-app.use(function(request, response, next) {
-  next(createError(404));
-});
+//app.use(function(request, response, next) {
+//  next(createError(404));
+//});
 
 // error handler
 app.use(function(err, request, response, next) {

@@ -5,4 +5,7 @@ block content
 		.jumbotron
 			p.lead
 				!=messages()
-				| yipi yipi
+			if !user
+				p Welcome, please register or login
+			if user
+				p Welcome #{user.username}

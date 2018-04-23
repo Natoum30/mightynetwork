@@ -4919,6 +4919,16 @@ a.thumbnail.active {
   border: 1px solid;
   border-radius: 4px;
 }
+.error{
+  padding: 5px;
+  margin-bottom: 5px;
+  border: 1px solid;
+  border-radius: 4px;
+  list-style:none;
+  color: #a94442;
+  background-color: #f2dede;
+  border-color: #ebccd1;}
+
 .alert h4 {
   margin-top: 0;
   color: inherit;

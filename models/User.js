@@ -27,7 +27,7 @@ userSchema.methods.compare = function(pw){
   return bcrypt.compareSync(pw, this.password);
 };
 
-module.exports=mongoose.model('User', userSchema);
+var User = module.exports=mongoose.model('User', userSchema);
 
 module.exports.createUser= function(newUser,callback){
   bcrypt.genSalt(10, function(error, salt){
@@ -36,6 +36,8 @@ module.exports.createUser= function(newUser,callback){
      newUser.save(callback);
    });
  });
+   if(!newUser.created_at) newUser.created_at = new Date();
+
 };
 
 module.exports.getUserById=function(id,callback){
@@ -43,9 +45,12 @@ module.exports.getUserById=function(id,callback){
 };
 
 module.exports.getUserByUsername=function(username,callback){
-  var query = {username:username};
+  var query = {username: username};
   User.findOne(query,callback);
 };
+
 module.exports.comparePassword=function(candidatePassword,hash,callback){
-  bcrypt.compare();
+  bcrypt.compare(candidatePassword, hash, function(error,isMatch){
+    callback(null, isMatch);
+  });
 };

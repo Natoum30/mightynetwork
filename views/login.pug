@@ -4,7 +4,7 @@ block content
   .container
     .jumbotron
       h2 Log in
-      
+      !=messages()
       form(action="/users/login", method="POST")
         .form-group
           label Pseudo
