@@ -49,7 +49,7 @@ if(errors){
     } else{
     console.log(user);
 
-    request.flash('alert-success','You are now registered and can log in');
+    request.flash('alert-success','You are now registered. Please login for more fun.');
 
     response.location('/');
     response.redirect('/');
@@ -70,6 +70,16 @@ router.post('/login',
   function(request, response) {
     request.flash('success','You are now logged in');
     response.redirect('/');
+});
+
+passport.serializeUser(function(user, done) {
+  done(null, user.id);
+});
+
+passport.deserializeUser(function(id, done) {
+  User.getUserById(id, function(err, user) {
+    done(err, user);
+  });
 });
 
 passport.use(new LocalStrategy(function(username,password,done){
