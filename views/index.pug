@@ -4,7 +4,7 @@ block content
   .container
     p.lead
       !=messages()
-    h3 Something on your mind ?
+    h2 Something on your mind ?
     |
     form(action="/", method="POST")
       .form-group 
@@ -15,7 +15,7 @@ block content
         each error , i in errors
           div.alert.alert-danger #{error.msg}
       !=messages()
-    h3 See some notes below :
+    h2 See some notes below :
       each note in notes
         .jumbotron
           p @#{note.author_username} wrote : 

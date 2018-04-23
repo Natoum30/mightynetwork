@@ -5,12 +5,12 @@ block content
     !=messages()
     h2 Log in
     .jumbotron
-      form(action="/users/login", method="POST")
+      form(action="/login", method="POST")
         .form-group
-          label Pseudo
-          input.form-control(type="text",placeholder="pseudo", name="username")
+          label Username
+          input.form-control(type="text",placeholder="username", name="username")
         .form-group
-          label Mot de passe
+          label Password
           input.form-control(type="password",placeholder="*****", name="password")
         .form-group
           input(type="submit",placeholder="submit")

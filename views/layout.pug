@@ -15,17 +15,19 @@ html(lang="fr")
           ul.nav.nav-pills.pull-right
             if !user
               li(class=(title == 'Register' ? 'active' : ''))
-                a(href='/users/register') Register
+                a(href='/register') Register
               li(class=(title == 'Log in' ? 'active' : ''))
-                a(href='/users/login') Log in
+                a(href='/login') Log in
             if user    
               li(class=(title == 'user.username' ? 'active' : ''))
                 a(href='/users/@'+ user.username) #{user.username}              
               li(class=(title == 'Members' ? 'active' : ''))
                 a(href='/users/') Members
+              li(class=(title == 'My settings' ? 'active' : ''))
+                a(href='/users/settings') My settings
               li(role='logout')
-                a(href='/users/logout').text-muted Log out
+                a(href='/logout').text-muted Log out
               
-          h3
+          h2
             a(href='/') mightyNetwork
     block content
