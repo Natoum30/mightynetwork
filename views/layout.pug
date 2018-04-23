@@ -19,10 +19,13 @@ html(lang="fr")
               li(class=(title == 'Log in' ? 'active' : ''))
                 a(href='/users/login') Log in
             if user    
+              li(class=(title == 'user.username' ? 'active' : ''))
+                a(href='/users/@'+ user.username) #{user.username}              
               li(class=(title == 'Members' ? 'active' : ''))
                 a(href='/users/') Members
               li(role='logout')
                 a(href='/users/logout').text-muted Log out
+              
           h3
             a(href='/') mightyNetwork
     block content

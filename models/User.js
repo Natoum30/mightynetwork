@@ -9,19 +9,6 @@ var userSchema = new Schema({
   created_at: Date
 });
 
-// 'pre' ça se passe juste avant l'écriture dans le base de donnée
-//userSchema.pre('save', function(next){
-//  var user = this;
-//
-//  if(!this.created_at) this.created_at = new Date();
-//  bcrypt.genSalt(5, function(error, salt){
-//    bcrypt.hash(user.password, salt, function(error,hash){
-//      user.password=hash;
-//
-//      next();
-//    });
-//  });
-//});
 
 userSchema.methods.compare = function(pw){
   return bcrypt.compareSync(pw, this.password);
@@ -53,4 +40,11 @@ module.exports.comparePassword=function(candidatePassword,hash,callback){
   bcrypt.compare(candidatePassword, hash, function(error,isMatch){
     callback(null, isMatch);
   });
+};
+
+module.exports.ensureAuthenticate=function(request,response,next){
+  if (request.isAuthenticated()){
+    return next();
+  }
+  response.redirect('/users/login');
 };

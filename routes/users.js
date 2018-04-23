@@ -6,20 +6,20 @@ var User = require('../models/User');
 
 
 
-
 /* GET users listing. */
-router.get('/',  ensureAuthenticate, function (request, response){
-  response.render('members', {
-    title:'Members'
+router.get('/',  User.ensureAuthenticate, function (request, response){
+if (request.user)
+{
+  User.find({}, function(error, users){
+    response.render('members', {
+        title:'Members',
+        users:users
+      });
   });
+}
 });
 
-function ensureAuthenticate(request,response,next){
-  if (request.isAuthenticated()){
-    return next();
-  }
-  response.redirect('/users/login');
-}
+
 
 
 /* Register routes */
@@ -81,7 +81,7 @@ router.get('/login', function(request, response) {
 router.post('/login',
   passport.authenticate('local',{failureRedirect:'/users/login',failureFlash:true}),
   function(request, response) {
-    request.flash('alert-success','You are now logged in');
+    request.flash('alert-success','You are now logged in, welcome !' );
     response.redirect('/');
 });
 
@@ -116,13 +116,23 @@ User.getUserByUsername(username, function(error,user){
 );
 
 
-/* Logout route*/
+/* Logout routes */
 router.get('/logout',function(request,response){
   request.logout();
   request.flash('alert-success','You are now logged out');
   response.redirect('/users/login');
 });
-/**/
+
+
+/* Me routes */
+
+router.get('/me', User.ensureAuthenticate, function(request,response){
+  response.render('/me', {
+    title:request.session.user.username
+  });
+});
+
+/* User db routes */
 
 router.get('/users.json', function(request,response){
   User.find({}, function(error,users){
@@ -130,5 +140,7 @@ router.get('/users.json', function(request,response){
     response.send(users);
   });
 });
+
+
 
 module.exports = router;

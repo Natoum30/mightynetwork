@@ -2,9 +2,9 @@ extends layout
 
 block content
   .container
+    !=messages()
+    h2 Log in
     .jumbotron
-      h2 Log in
-      !=messages()
       form(action="/users/login", method="POST")
         .form-group
           label Pseudo

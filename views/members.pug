@@ -2,5 +2,9 @@ extends layout
 
 block content
   .container
+    h2 Members
     .jumbotron
-      h2 Members
+      each user in users
+        li=user.username   
+          span  - membre depuis 
+          span=user.created_at
