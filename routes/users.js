@@ -9,20 +9,18 @@ var User = require('../models/User');
 router.post('/', User.ensureAuthenticate, function(request,response,next){
   var user_searched = request.body.user_searched;
 
-  User.findOne({username:user_searched}, function(error,user_searched){
-    if(user_searched){
-      console.log(response.locals.user);
-
+  User.findOne({username:user_searched}, function(error,user){
+    if(user){
         response.render('members', {
         title:'Members',
-        member:user_searched,
-        subtitle:'Results :'
+        member:user,
+        subtitle:'Results :',
       });
     } else {
         response.render('members', {
         title:'Members',
         member:null,
-        subtitle:'No members found, sorry'
+        subtitle:'No members found, sorry',
       });
     }
 });

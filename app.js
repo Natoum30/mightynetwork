@@ -16,7 +16,6 @@ var mongoose = require('mongoose');
 var db = mongoose.createConnection('mongodb://localhost:27017/mightynetwork2');
 var bcrypt = require('bcryptjs');
 
-
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
@@ -61,7 +60,7 @@ app.use(function (request, response, next) {
   next();
 });
 
-app.get('*', function(request,response,next){
+app.use(function(request,response,next){
   response.locals.user = request.user || null;
   next();
 });

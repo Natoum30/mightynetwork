@@ -5,7 +5,7 @@ block content
     p.lead
       !=messages()
     h2 Search for members
-    form(action="/users/", method="POST")
+    form(action="/users", method="POST")
       .form-group
         input.form-control(type="text",placeholder="Find someone@host.org", name="user_searched")
         input(type="submit",placeholder="submit")

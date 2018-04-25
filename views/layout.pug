@@ -18,7 +18,7 @@ html(lang="fr")
                 a(href='/register') Register
               li(class=(title == 'Log in' ? 'active' : ''))
                 a(href='/login') Log in
-            else   
+            if user   
               li(class=(title == 'user.username' ? 'active' : ''))
                 a(href='/users/@'+ user.username) #{user.username}              
               li(class=(title == 'Members' ? 'active' : ''))
