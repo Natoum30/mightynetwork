@@ -3,26 +3,38 @@ var router = express.Router();
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var User = require('../models/User');
+var Actor = require('../models/activitypub/Actor');
+
 //var Actor = require('../models/activitypub/Actor');
 
 /* GET users listing. */
 router.post('/', User.ensureAuthenticate, function(request,response,next){
-  var user_searched = request.body.user_searched;
-
-  User.findOne({username:user_searched}, function(error,user){
-    if(user){
+  var str = request.body.user_searched;
+  var [user_searched,host] = str.split('@');
+  Actor.findOne({username:user_searched,host:host}, function(error,actors){
+    if(actors){
         response.render('members', {
         title:'Members',
-        member:user,
+        actors:actors,
         subtitle:'Results :',
       });
     } else {
-        response.render('members', {
-        title:'Members',
-        member:null,
-        subtitle:'No members found, sorry',
-      });
-    }
+        Actor.find({username:user_searched}, function(error,actors){
+          if(actors){
+              response.render('members', {
+                title:'Members',
+                actors:actors,
+                subtitle:'Maybe you are looking for :',
+            });
+          } else {
+            response.render('members', {
+              title:'Members',
+              actors:null,
+              subtitle:'No members found, sorry',
+            });
+          }
+        });
+      }
 });
 });
 

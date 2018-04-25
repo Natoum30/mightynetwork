@@ -21,6 +21,8 @@ var usersRouter = require('./routes/users');
 
 var app = express();
 
+var instance = 'mighty.network';
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views')); // Pas obligatoire
 app.set('view engine', 'pug');

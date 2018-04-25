@@ -4,7 +4,7 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var Note = require('../models/Note');
 var User = require('../models/User');
-
+var Actor = require('../models/activitypub/Actor');
 
 /* GET home page. */
 router.get('/', function(request, response, next) {
@@ -36,6 +36,7 @@ router.post('/register', function(request,response){
   var username = request.body.username;
   var password = request.body.password;
   var password2 = request.body.password2;
+  var instance = request.body.instance;
 
 request.checkBody('username','Username is required').notEmpty();
 request.checkBody('password','Password is required').notEmpty();
@@ -50,8 +51,8 @@ if(errors){
 } else {
   var newUser = new User ({
     username: username,
-    password:password
-  });
+    password:password,
+    });
 
   User.createUser(newUser, function(error,user){
     if(error){
@@ -59,14 +60,34 @@ if(errors){
         error:'username not available'
       });
     } else{
-    console.log(user);
 
-    request.flash('alert-success','You are now registered. Please login for more fun.');
+      var newActor = new Actor ({
+        user_id:newUser._id,
+        username:newUser.username,
+        host:instance, // A changer
+        url:instance + '/'+ newUser.username + '/', // Webfinger
+        inbox:instance + '/'+ newUser.username + '/' + '/inbox',
+        outbox:instance +  '/' + newUser.username + '/outbox',
+        following:instance +  '/' + newUser.username + '/following',
+        followers:instance +  '/' + newUser.username + '/followers',
+        created_at:newUser.created_at
+        });
 
-    response.location('/');
-    response.redirect('/');
+      Actor.createActor(newActor, function(error,actor){
+        if(error){
+          response.render('regiser', {
+            error:'username not avaible'
+          });
+        }
+      });
+      console.log(newActor);
+      request.flash('alert-success','You are now registered. Please login for more fun.');
+
+      response.location('/');
+      response.redirect('/');
   }
 });
+console.log(newUser._id);
 }
 });
 

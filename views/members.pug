@@ -9,12 +9,15 @@ block content
       .form-group
         input.form-control(type="text",placeholder="Find someone@host.org", name="user_searched")
         input(type="submit",placeholder="submit")
-    if member
+    if actors
       h2=subtitle
       .jumbotron
-        p
-          a(href='')=member.username
-          span  - member since 
-          span=member.created_at
+        each actor in actors
+          p
+            a(href=actor.url)=actor.username
+              span @
+              span=actor.host
+            span  - member since 
+            span=actor.created_at
     else 
       h2=subtitle

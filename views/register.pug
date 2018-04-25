@@ -14,6 +14,9 @@ block content
         .form-group
           label Confirm password
           input.form-control(type="password",placeholder="*****", name="password2")
+        .form-group
+          label Instance
+          input.form-control(type="text",placeholder="@host", name="instance")
         p.errors
           if errors
             each error , i in errors
