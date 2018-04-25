@@ -2,9 +2,19 @@ extends layout
 
 block content
   .container
-    h2 Members
-    .jumbotron
-      each user in users
-        li=user.username   
-          span  - membre depuis 
-          span=user.created_at
+    p.lead
+      !=messages()
+    h2 Search for members
+    form(action="/users/", method="POST")
+      .form-group
+        input.form-control(type="text",placeholder="Find someone@host.org", name="user_searched")
+        input(type="submit",placeholder="submit")
+    if member
+      h2=subtitle
+      .jumbotron
+        p
+          a(href='')=member.username
+          span  - member since 
+          span=member.created_at
+    else 
+      h2=subtitle

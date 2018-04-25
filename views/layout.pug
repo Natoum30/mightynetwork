@@ -18,7 +18,7 @@ html(lang="fr")
                 a(href='/register') Register
               li(class=(title == 'Log in' ? 'active' : ''))
                 a(href='/login') Log in
-            if user    
+            else   
               li(class=(title == 'user.username' ? 'active' : ''))
                 a(href='/users/@'+ user.username) #{user.username}              
               li(class=(title == 'Members' ? 'active' : ''))
@@ -29,5 +29,5 @@ html(lang="fr")
                 a(href='/logout').text-muted Log out
               
           h2
-            a(href='/') mightyNetwork
+            a(href='/') cityNetwork
     block content

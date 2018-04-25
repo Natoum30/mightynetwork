@@ -2,11 +2,14 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var bcrypt = require('bcryptjs');
 var db = mongoose.connect('mongodb://localhost:27017/mightynetwork2');
+//var Actor = require('./activitypub/Actor');
+
 
 var userSchema = new Schema({
   username: {type:String, required:true, unique:true},
   password: {type:String, required:true},
-  created_at: Date
+  created_at: Date,
+  //actor: {type:Actor,required:true},
 });
 
 

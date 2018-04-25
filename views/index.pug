@@ -11,16 +11,11 @@ block content
         textarea(name="note", placeholder="Share it with the fediverse",cols="50")
       .form-group
         input(type="submit")
-      if errors
-        each error , i in errors
-          div.alert.alert-danger #{error.msg}
-      !=messages()
     h2 See some notes below :
       each note in notes
         .jumbotron
           p @#{note.author_username} wrote : 
           span= note.note 
-            
       else
         .jumbotron
           p No notes yet

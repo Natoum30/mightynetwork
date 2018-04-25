@@ -17,7 +17,6 @@ router.get('/', function(request, response, next) {
       });
     });
 
-
   } else {
     response.render('welcome', { title: 'Welcome to mightyNetwork' });
   }
@@ -128,34 +127,36 @@ router.get('/logout',function(request,response){
 
 /* Post a Note */
 router.post('/', User.ensureAuthenticate, function(request, response){
- var note = request.body.note;
 
-request.checkBody('note','You seem to have nothing to share ? Too bad !').notEmpty();
+  var note = request.body.note;
 
-var errors = request.validationErrors();
+  request.checkBody('note').notEmpty();
 
-if(errors){
-  response.render('index', {
-    errors:errors
-  });
-} else {
-  var newNote = new Note ({
-    note:note,
-    author_id:request.user._id,
-    author_username:request.user.username
-  });
-Note.createNote(newNote, function(error,note){
-  if(error) {
-  response.send('error');
-}  else {
+  var errors = request.validationErrors();
 
-    request.flash('alert-success','Message shared !');
+  if(errors){
 
-    response.location('/');
-    response.redirect('/');
-  }
-});
-}
+  request.flash('error','You seem to have nothing to share ? Too bad !');
+  response.location('/');
+  response.redirect('/');
+  } else {
+      var newNote = new Note ({
+      note:note,
+      author_id:request.user._id,
+      author_username:request.user.username
+      });
+
+      Note.createNote(newNote, function(error,note){
+
+        if(error) {
+          response.send('error');
+        }  else {
+            request.flash('alert-success','Message shared !');
+            response.location('/');
+            response.redirect('/');
+          }
+      });
+    }
 });
 
 /* PAS FINI */
