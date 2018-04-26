@@ -14,8 +14,10 @@ block content
     h2 See some notes below :
       each note in notes
         .jumbotron
-          p @#{note.author_username} wrote : 
-          span= note.note 
+          p 
+            a(href='/users/'+ note.author_username) @#{note.author_username} 
+            span wrote : 
+            span= note.note 
       else
         .jumbotron
           p No notes yet

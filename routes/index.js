@@ -6,22 +6,21 @@ var Note = require('../models/Note');
 var User = require('../models/User');
 var Actor = require('../models/activitypub/Actor');
 
-/* GET home page. */
+/* Index - Home page */
+
 router.get('/', function(request, response, next) {
   if (request.isAuthenticated())
   {
     Note.find({}, null, {sort:{created_at: -1}}, function(err, notes){
       response.render('index', {
         title: 'Home sweet home',
-        notes:notes
+        notes:notes,
       });
     });
-
   } else {
     response.render('welcome', { title: 'Welcome to mightyNetwork' });
   }
 });
-
 
 /* Register routes */
 
@@ -31,64 +30,65 @@ router.get('/register', function(request, response) {
   });
 });
 
-
 router.post('/register', function(request,response){
   var username = request.body.username;
   var password = request.body.password;
   var password2 = request.body.password2;
   var instance = request.body.instance;
 
-request.checkBody('username','Username is required').notEmpty();
-request.checkBody('password','Password is required').notEmpty();
-request.checkBody('password2','Passwords do not match').equals(password);
+  request.checkBody('username','Username is required').notEmpty();
+  request.checkBody('password','Password is required').notEmpty();
+  request.checkBody('password2','Passwords do not match').equals(password);
 
-var errors = request.validationErrors();
+  var errors = request.validationErrors();
 
-if(errors){
-  response.render('register',{
-    errors:errors
-  });
-} else {
-  var newUser = new User ({
-    username: username,
-    password:password,
+  if(errors){
+    response.render('register',{
+      errors:errors
+    });
+  } else {
+    var newUser = new User ({
+      username: username,
+      password:password
     });
 
-  User.createUser(newUser, function(error,user){
-    if(error){
-      response.render('register',{
-        error:'username not available'
-      });
-    } else{
+    User.createUser(newUser, function(error,user){
+      if(error){
+        response.render('register',{
+          error:'username not available'
+        });
+      } else {
 
-      var newActor = new Actor ({
-        user_id:newUser._id,
-        username:newUser.username,
-        host:instance, // A changer
-        url:instance + '/'+ newUser.username + '/', // Webfinger
-        inbox:instance + '/'+ newUser.username + '/' + '/inbox',
-        outbox:instance +  '/' + newUser.username + '/outbox',
-        following:instance +  '/' + newUser.username + '/following',
-        followers:instance +  '/' + newUser.username + '/followers',
-        created_at:newUser.created_at
+        var newActor = new Actor ({
+          user_id:newUser._id,
+          username:newUser.username,
+          host:instance, // A changer
+          url:instance + '/'+ newUser.username + '/', // Webfinger
+          inbox:instance + '/'+ newUser.username + '/' + '/inbox',
+          outbox:instance +  '/' + newUser.username + '/outbox',
+          following:instance +  '/' + newUser.username + '/following',
+          followers:instance +  '/' + newUser.username + '/followers',
+          created_at:newUser.created_at
         });
 
-      Actor.createActor(newActor, function(error,actor){
-        if(error){
-          response.render('regiser', {
-            error:'username not avaible'
-          });
-        }
-      });
-      console.log(newActor);
-      request.flash('alert-success','You are now registered. Please login for more fun.');
+        Actor.createActor(newActor, function(error,actor){
+          if(error){
+            response.render('regiser', {
+              error:'username not avaible'
+            });
+          }
+        });
 
-      response.location('/');
-      response.redirect('/');
+        console.log(newActor);
+
+        request.flash('alert-success','You are now registered. Please login for more fun.');
+        response.location('/');
+        response.redirect('/');
+      }
+    });
+
+    console.log(newUser._id);
   }
-});
-console.log(newUser._id);
-}
 });
 
 
@@ -97,14 +97,13 @@ router.get('/login', function(request, response) {
   response.render('login', {
     title:'Log in'
   });
-  });
-
+});
 
 router.post('/login',
-  passport.authenticate('local',{failureRedirect:'/login',failureFlash:true}),
-  function(request, response) {
-    request.flash('alert-success','You are now logged in, welcome !' );
-    response.redirect('/');
+passport.authenticate('local',{failureRedirect:'/login',failureFlash:true}),
+function(request, response) {
+  request.flash('alert-success','You are now logged in, welcome !' );
+  response.redirect('/');
 });
 
 passport.serializeUser(function(user, done) {
@@ -119,23 +118,22 @@ passport.deserializeUser(function(id, done) {
 
 passport.use(new LocalStrategy(function(username,password,done){
 
-User.getUserByUsername(username, function(error,user){
-  if(error) throw error;
-  if(!user) {
-    return done(null,false,{message:'Invalid authentification'});
-  }
-
-  User.comparePassword(password,user.password,function(error,isMatch){
-    if(error) return done(error);
-    if(isMatch) {
-      return done(null, user);
-    } else {
-      return done(null, false, {message:'Invalid authentification'});
+  User.getUserByUsername(username, function(error,user){
+    if(error) throw error;
+    if(!user) {
+      return done(null,false,{message:'Invalid authentification'});
     }
+
+    User.comparePassword(password,user.password,function(error,isMatch){
+      if(error) return done(error);
+      if(isMatch) {
+        return done(null, user);
+      } else {
+        return done(null, false, {message:'Invalid authentification'});
+      }
+    });
   });
-});
-})
-);
+}));
 
 
 /* Logout routes */
@@ -148,36 +146,30 @@ router.get('/logout',function(request,response){
 
 /* Post a Note */
 router.post('/', User.ensureAuthenticate, function(request, response){
-
   var note = request.body.note;
-
   request.checkBody('note').notEmpty();
-
   var errors = request.validationErrors();
-
   if(errors){
-
-  request.flash('error','You seem to have nothing to share ? Too bad !');
-  response.location('/');
-  response.redirect('/');
+    request.flash('error','You seem to have nothing to share ? Too bad !');
+    response.location('/');
+    response.redirect('/');
   } else {
-      var newNote = new Note ({
+    var newNote = new Note ({
       note:note,
       author_id:request.user._id,
       author_username:request.user.username
-      });
+    });
 
-      Note.createNote(newNote, function(error,note){
-
-        if(error) {
-          response.send('error');
-        }  else {
-            request.flash('alert-success','Message shared !');
-            response.location('/');
-            response.redirect('/');
-          }
-      });
-    }
+    Note.createNote(newNote, function(error,note){
+      if(error) {
+        response.send('error');
+      } else {
+        request.flash('alert-success','Message shared !');
+        response.location('/');
+        response.redirect('/');
+      }
+    });
+  }
 });
 
 /* PAS FINI */
@@ -186,7 +178,9 @@ router.get('/note/:id', function(request,response){
     response.render('note',{username:request.user.username,content:note.note});
   });
 });
-/* db */
+
+
+/* Notes db routes */
 
 router.get('/note.json', function(request,response){
   Note.find({}, function(error,notes){
@@ -194,5 +188,7 @@ router.get('/note.json', function(request,response){
     response.send(notes);
   });
 });
+
+/* Exports */
 
 module.exports = router;
