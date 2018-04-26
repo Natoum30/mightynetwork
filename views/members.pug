@@ -13,7 +13,7 @@ block content
       h2=subtitle
       .jumbotron
         p
-          a(href='')=actor.username
+          a(href='/users/'+ actor.username)=actor.username
             span @
             span=actor.host
           span  - member since 
@@ -23,7 +23,7 @@ block content
       .jumbotron
         each actor in actors
           p
-            a(href='')=actor.username
+            a(href='/users/' + actor.username)=actor.username
               span @
               span=actor.host 
             span  - member since  
