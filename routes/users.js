@@ -11,32 +11,27 @@ var Actor = require('../models/activitypub/Actor');
 router.post('/', User.ensureAuthenticate, function(request,response,next){
   var str = request.body.user_searched;
   var [user_searched,host] = str.split('@');
-  Actor.findOne({username:user_searched,host:host}, function(error,actors){
-    if(actors){
+  Actor.findOne({'username':user_searched,'host':host}, function(error,actor){
+    if(actor){
         response.render('members', {
-        title:'Members',
-        actors:actors,
-        subtitle:'Results :',
-      });
-    } else {
-        Actor.find({username:user_searched}, function(error,actors){
+          unique:true,
+          actor:actor,
+          subtitle:'We found a match'
+        });
+      } else {
+        Actor.find({'username':user_searched}, function(error,actors){
           if(actors){
-              response.render('members', {
-                title:'Members',
-                actors:actors,
-                subtitle:'Maybe you are looking for :',
-            });
-          } else {
-            response.render('members', {
-              title:'Members',
-              actors:null,
-              subtitle:'No members found, sorry',
+            response.render('members',{
+              unique:false,
+              actors:actors,
+              subtitle:'Maybe you are looking for:'
             });
           }
         });
       }
-});
-});
+    });
+  });
+
 
 
 router.get('/',  User.ensureAuthenticate, function (request, response){
