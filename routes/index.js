@@ -55,6 +55,7 @@ router.post('/register', function(request,response){
     User.createUser(newUser, function(error,user){
       if(error){
         response.render('register',{
+          title:'Register - Error',
           error:'username not available'
         });
       } else {
@@ -74,6 +75,7 @@ router.post('/register', function(request,response){
         Actor.createActor(newActor, function(error,actor){
           if(error){
             response.render('regiser', {
+              title:'Register - Error',
               error:'username not avaible'
             });
           }

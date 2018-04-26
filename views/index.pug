@@ -19,6 +19,7 @@ block content
               span @#{note.author_host} 
             span wrote : 
             span= note.note 
+          p.date=note.created_at
       else
         .jumbotron
           p No notes yet

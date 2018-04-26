@@ -13,7 +13,7 @@ var upload = multer({dest:'./uploads'});
 var flash = require('connect-flash');
 var mongo = require('mongodb');
 var mongoose = require('mongoose');
-var db = mongoose.createConnection('mongodb://localhost:27017/mightynetwork2');
+var db = mongoose.createConnection('mongodb://localhost:27017/mightynetwork');
 var bcrypt = require('bcryptjs');
 
 var indexRouter = require('./routes/index');

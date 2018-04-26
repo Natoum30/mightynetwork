@@ -1,6 +1,6 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-var db = mongoose.connect('mongodb://localhost:27017/mightynetwork2');
+var db = mongoose.connect('mongodb://localhost:27017/mightynetwork');
 var Actor = require('./Actor');
 
 var FollowState = new Schema({

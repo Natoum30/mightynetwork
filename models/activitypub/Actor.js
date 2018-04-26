@@ -1,7 +1,7 @@
 // Modèle Actor (pas encore ActivityPub)
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-var db = mongoose.connect('mongodb://localhost:27017/mightynetwork2');
+var db = mongoose.connect('mongodb://localhost:27017/mightynetwork');
 
 var actorSchema = new Schema({
   user_id:{type:Schema.Types.ObjectId, required:true},

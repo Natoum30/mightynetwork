@@ -1,0 +1,18 @@
+extends layout
+
+block content
+  .container
+    p.lead
+      !=messages()
+    h2 #{author}'s notes :
+      each note in notes
+        .jumbotron
+          p 
+            a(href='/users/'+ author)  #{author}
+              span @#{host} 
+            span wrote : 
+            span= note.note 
+      else
+        .jumbotron
+          p No notes yet
+  
