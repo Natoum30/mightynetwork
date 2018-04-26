@@ -55,7 +55,6 @@ router.get('/settings', User.ensureAuthenticate, function(request,response){
 router.get('/:username', User.ensureAuthenticate, function(request,response){
   var username = request.params.username;
   Note.find({'author_username':username}, null, {sort:{created_at:-1}}, function(error, notes){
-    console.log(notes)
     response.render('me',{
       author:username,
       notes:notes
@@ -68,10 +67,10 @@ router.get('/:username', User.ensureAuthenticate, function(request,response){
 
 /* User db routes */
 
-router.get('/users.json', function(request,response){
-  User.find({}, function(error,users){
+router.get('/db/users.json', function(request,response){
+  Actor.find({}, function(error,actors){
     if (error) throw error;
-    response.send(users);
+    response.send(actors);
   });
 });
 

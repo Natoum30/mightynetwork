@@ -6,7 +6,8 @@ var noteSchema = new Schema({
   note: {type:String, required:true},
   created_at: Date,
   author_id: {type:Schema.Types.ObjectId, required:true},
-  author_username:{type:String,required:true}
+  author_username:{type:String,required:true},
+  author_host:{type:String,required:true}
 });
 
 var Note = module.exports=mongoose.model('Note', noteSchema);

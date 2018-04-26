@@ -154,21 +154,29 @@ router.post('/', User.ensureAuthenticate, function(request, response){
     response.location('/');
     response.redirect('/');
   } else {
-    var newNote = new Note ({
-      note:note,
-      author_id:request.user._id,
-      author_username:request.user.username
-    });
 
-    Note.createNote(newNote, function(error,note){
-      if(error) {
-        response.send('error');
+    Actor.findOne({'user_id': request.user._id}, function(error,actor){
+      if(error){
+      ///
       } else {
-        request.flash('alert-success','Message shared !');
-        response.location('/');
-        response.redirect('/');
-      }
-    });
+      var newNote = new Note ({
+        note:note,
+        author_id:actor._id,
+        author_username:actor.username,
+        author_host:actor.host
+      });
+
+      Note.createNote(newNote, function(error,note){
+        if(error) {
+          response.send('error');
+        } else {
+          request.flash('alert-success','Message shared !');
+          response.location('/');
+          response.redirect('/');
+        }
+      });
+    }
+  });
   }
 });
 

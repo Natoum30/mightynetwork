@@ -15,7 +15,8 @@ block content
       each note in notes
         .jumbotron
           p 
-            a(href='/users/'+ note.author_username) @#{note.author_username} 
+            a(href='/users/'+ note.author_username) #{note.author_username}
+              span @#{note.author_host} 
             span wrote : 
             span= note.note 
       else
