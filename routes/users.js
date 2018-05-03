@@ -5,13 +5,18 @@ var LocalStrategy = require('passport-local').Strategy;
 var User = require('../models/User');
 var Note = require('../models/Note');
 var Actor = require('../models/activitypub/Actor');
+var req = require('request');
 
 //var Actor = require('../models/activitypub/Actor');
 
 /* Search bar - Members routes */
-router.post('/', User.ensureAuthenticate, function(request,response,next){
+router.post('/', function(request,response,next){
   var str = request.body.user_searched;
   var [user_searched,host] = str.split('@');
+
+
+
+
   Actor.findOne({'username':user_searched,'host':host}, function(error,actor){
     if(actor){
       response.redirect('/users/'+ actor.username);
@@ -36,7 +41,7 @@ router.post('/', User.ensureAuthenticate, function(request,response,next){
 });
 
 
-router.get('/',  User.ensureAuthenticate, function (request, response){
+router.get('/',  function (request, response){
   response.render('members', {
     title:'Members',
   });
@@ -45,9 +50,9 @@ router.get('/',  User.ensureAuthenticate, function (request, response){
 
 /* My settings routes */
 
-router.get('/settings', User.ensureAuthenticate, function(request,response){
-  response.render('settings', {
-    title:'My settings',
+router.get('/notifications', User.ensureAuthenticate, function(request,response){
+  response.render('notifications', {
+    title:'Notifications',
     username:request.user.username
   });
 });
@@ -62,20 +67,37 @@ router.get('/:username', User.ensureAuthenticate, function(request,response){
     if(error){
       throw error;
     } else {
-      Note.find({'author_username':actor.username}, null, {sort:{created_at:-1}}, function(error,notes){
-        response.render('user',{
-          title:actor.username+'@'+actor.host,
-          notes:notes,
-          author:actor.username,
-          host:actor.host
+      Note.find(
+        {'author_username':actor.username},
+        null,
+        {sort:{created_at:-1}},
+        function(error,notes){
+          response.render('user',{
+            title:actor.username+'@'+actor.host,
+            notes:notes,
+            author:actor.username,
+            host:actor.host
+          });
         });
+      }
+    });
+  }
+);
 
-      });
-    }
+
+router.get('/:username/:id', User.ensureAuthenticate, function(request,response){
+  var username = request.params.username;
+  Note.findById(request.params.id, function(error,note){
+    response.render('note',{
+      username:note.author_username,
+      host:note.author_host,
+      content:note.note,
+      created_at:note.created_at
+    });
   });
-
-
 });
+
+
 
 
 

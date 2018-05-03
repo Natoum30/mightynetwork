@@ -1,0 +1,13 @@
+extends layout
+
+block content
+  .container
+    .jumbotron
+      p 
+        a(href='/users/'+ author)  #{username}
+          span @#{host} 
+        span wrote : 
+        span=content
+        p.date=created_at
+
+  

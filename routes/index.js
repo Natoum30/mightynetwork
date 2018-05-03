@@ -34,7 +34,7 @@ router.post('/register', function(request,response){
   var username = request.body.username;
   var password = request.body.password;
   var password2 = request.body.password2;
-  var instance = request.body.instance;
+  var instance = request.get('Host');
 
   request.checkBody('username','Username is required').notEmpty();
   request.checkBody('password','Password is required').notEmpty();
@@ -83,7 +83,10 @@ router.post('/register', function(request,response){
 
         console.log(newActor);
 
-        request.flash('alert-success','You are now registered. Please login for more fun.');
+        request.flash(
+          'alert-success',
+          'You are now registered. Please login for more fun.'
+        );
         response.location('/');
         response.redirect('/');
       }
@@ -180,13 +183,6 @@ router.post('/', User.ensureAuthenticate, function(request, response){
     }
   });
   }
-});
-
-/* PAS FINI */
-router.get('/note/:id', function(request,response){
-  Notes.findById(request.params.id, function(error,note){
-    response.render('note',{username:request.user.username,content:note.note});
-  });
 });
 
 
