@@ -15,9 +15,11 @@ var mongo = require('mongodb');
 var mongoose = require('mongoose');
 var db = mongoose.createConnection('mongodb://localhost:27017/mightynetwork');
 var bcrypt = require('bcryptjs');
+var detective = require('express-detective');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var webfingerRouter = require('./routes/webfinger');
 
 var app = express();
 
@@ -27,11 +29,15 @@ var app = express();
 app.set('views', path.join(__dirname, 'views')); // Pas obligatoire
 app.set('view engine', 'pug');
 
+//app.use(detective({includeHeaders: true, includeBody: true, includeQueryString: true}));
+
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static('public'));
+app.use(express.json({type: ['application/json', 'application/activity+json', 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"']}));
+app.use(express.urlencoded({ extended: true }));
 app.use(session({secret:'jaimelechocolat', saveUninitialized:true, resave:true}));
 
 // Validator ?
@@ -69,7 +75,7 @@ app.use(function(request,response,next){
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-
+app.use('/.well-known', webfingerRouter);
 // catch 404 and forward to error handler
 //app.use(function(request, response, next) {
 //  next(createError(404));

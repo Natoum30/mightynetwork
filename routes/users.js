@@ -11,33 +11,42 @@ var req = require('request');
 
 /* Search bar - Members routes */
 router.post('/', function(request,response,next){
+
+
   var str = request.body.user_searched;
   var [user_searched,host] = str.split('@');
+  var url = "http://"+ host + "/users/" + user_searched; // en attend le Webfinger
 
 
-
-
-  Actor.findOne({'username':user_searched,'host':host}, function(error,actor){
-    if(actor){
-      response.redirect('/users/'+ actor.username);
-    } else {
-      Actor.find({'username':user_searched}, function(error,actors){
-        if(actors.length>0){
-          response.render('members',{
-            title:'Members',
-            actors:actors,
-            subtitle:'Maybe you are looking for:'
-          });
-        } else {
-          response.render('members',{
-            title:'Members',
-            nofound:true,
-            subtitle:'No member found'
-          });
-        }
-      });
+  req.get({url:url,json:true}, function(error,res,body){
+    if (!error && res.statusCode === 200 ) {
+      console.log(body);
     }
   });
+
+
+
+//  Actor.findOne({'username':user_searched,'host':host}, function(error,actor){
+//    if(actor){
+//      response.redirect('/users/'+ actor.username);
+//    } else {
+//      Actor.find({'username':user_searched}, function(error,actors){
+//        if(actors.length>0){
+//          response.render('members',{
+//            title:'Members',
+//            actors:actors,
+//            subtitle:'Maybe you are looking for:'
+//          });
+//        } else {
+//          response.render('members',{
+//            title:'Members',
+//            nofound:true,
+//            subtitle:'No member found'
+//          });
+//        }
+//      });
+//    }
+//  });
 });
 
 
@@ -56,6 +65,16 @@ router.get('/notifications', User.ensureAuthenticate, function(request,response)
     username:request.user.username
   });
 });
+
+router.get('/users.json', function(request,response){
+  Actor.find({}, function(error,actors){
+    if (error) throw error;
+    response.send(actors);
+  });
+});
+
+
+
 
 
 /* My page route */
@@ -103,14 +122,6 @@ router.get('/:username/:id', User.ensureAuthenticate, function(request,response)
 
 
 /* User db routes */
-
-router.get('/db/users.json', function(request,response){
-  Actor.find({}, function(error,actors){
-    if (error) throw error;
-    response.send(actors);
-  });
-});
-
 
 
 module.exports = router;

@@ -64,11 +64,11 @@ router.post('/register', function(request,response){
           user_id:newUser._id,
           username:newUser.username,
           host:instance, // A changer
-          url:instance + '/'+ newUser.username + '/', // Webfinger
-          inbox:instance + '/'+ newUser.username + '/' + '/inbox',
-          outbox:instance +  '/' + newUser.username + '/outbox',
-          following:instance +  '/' + newUser.username + '/following',
-          followers:instance +  '/' + newUser.username + '/followers',
+          url:instance + '/users/'+ newUser.username + '/', // Webfinger
+          inbox:instance + '/users/'+ newUser.username + '/' + '/inbox',
+          outbox:instance +  '/users/' + newUser.username + '/outbox',
+          following:instance +  '/users/' + newUser.username + '/following',
+          followers:instance +  '/users/' + newUser.username + '/followers',
           created_at:newUser.created_at
         });
 
@@ -184,7 +184,6 @@ router.post('/', User.ensureAuthenticate, function(request, response){
   });
   }
 });
-
 
 /* Notes db routes */
 

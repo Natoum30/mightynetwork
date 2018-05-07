@@ -12,12 +12,14 @@
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.9",
     "express": "~4.16.0",
+    "express-detective": "^1.0.1",
     "express-messages": "*",
     "express-session": "^1.15.6",
     "express-validator": "*",
     "http-errors": "~1.6.2",
     "mongodb": "*",
     "mongoose": "^5.0.15",
+    "mongoose-jsonld": "^0.2.9",
     "morgan": "~1.9.0",
     "multer": "*",
     "nodemon": "^1.17.3",
@@ -26,6 +28,7 @@
     "passport-http": "*",
     "passport-local": "*",
     "pug": "*",
-    "request": "^2.85.0"
+    "request": "^2.85.0",
+    "webfinger": "^0.4.2"
   }
 }
