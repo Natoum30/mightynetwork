@@ -64,11 +64,11 @@ router.post('/register', function(request,response){
           user_id:newUser._id,
           username:newUser.username,
           host:instance, // A changer
-          url:instance + '/users/'+ newUser.username + '/', // Webfinger
-          inbox:instance + '/users/'+ newUser.username + '/' + '/inbox',
-          outbox:instance +  '/users/' + newUser.username + '/outbox',
-          following:instance +  '/users/' + newUser.username + '/following',
-          followers:instance +  '/users/' + newUser.username + '/followers',
+          url:"http://" + instance + '/users/'+ newUser.username, // Webfinger
+          inbox:"http://" + instance + '/users/'+ newUser.username + '/inbox',
+          outbox:"http://" + instance +  '/users/' + newUser.username + '/outbox',
+          following:"http://" + instance +  '/users/' + newUser.username + '/following',
+          followers:"http://" + instance +  '/users/' + newUser.username + '/followers',
           created_at:newUser.created_at
         });
 

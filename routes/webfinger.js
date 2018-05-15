@@ -50,9 +50,9 @@ router.get('/webfinger', function (req, res, next) {
         // Set correct content type.
 
 
-        var response = JSON.stringify({
+        var response = {
           "subject": req.query.resource,
-          "aliases": actor.url,
+          "aliases": [ actor.url ],
           "links": [
             {
               "rel": "self",
@@ -60,15 +60,15 @@ router.get('/webfinger', function (req, res, next) {
               "href": actor.url
             }
           ]
-        });
+        };
         //  console.log(' ↳ Sending WebFinger response.\n');
-        res.send(response);
+        res.json(response);
       }
       if(!actor) {
-        var notfound = JSON.stringify({
+        var notfound = {
           "error":"Actor not found"
-        });
-        res.send(notfound);
+        };
+        res.json(notfound);
       }
     });
    } else {

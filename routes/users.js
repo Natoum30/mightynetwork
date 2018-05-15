@@ -13,16 +13,37 @@ var req = require('request');
 router.post('/', function(request,response,next){
 
 
-  var str = request.body.user_searched;
-  var [user_searched,host] = str.split('@');
-  var url = "http://"+ host + "/users/" + user_searched; // en attend le Webfinger
+  var userCalled = request.body.user_searched;
+  var [userCalledUsername,userCalledHost] = userCalled.split('@');
+  var webfingerRoute = "http://" + userCalledHost + "/.well-known/webfinger?resource=acct:" + userCalled;
+  var webfingerOptions = {
+    url: webfingerRoute,
+    json:true
+  };
+  console.log(webfingerOptions);
+  req.get(webfingerOptions, function(error, res, actorWebfinger){
+    if(!error && res.statusCode === 200){
+      var actorUrl = actorWebfinger.aliases[0];
 
+      var actorOptions ={
+        url:actorUrl,
+        headers:{
+          'Accept' : 'application/activity+json'
+        },
+        json:true
+      };
 
-  req.get({url:url,json:true}, function(error,res,body){
-    if (!error && res.statusCode === 200 ) {
-      console.log(body);
+      console.log(actorOptions);
+      req.get(actorOptions, function(error,res,actor){
+        if (!error && res.statusCode === 200 ) {
+          response.json(actor);
+        }
+        else {console.log('error');}
+      });
     }
   });
+
+
 
 
 
@@ -79,29 +100,74 @@ router.get('/users.json', function(request,response){
 
 /* My page route */
 
-router.get('/:username', User.ensureAuthenticate, function(request,response){
+router.get('/:username', function(request,response,next){
   var username = request.params.username;
-
   Actor.findOne({'username':username}, function(error,actor){
     if(error){
-      throw error;
+      console.log('error');
+    }
+    if (!actor){
+      response.format({
+        'text/html': function(){
+      response.render('error', {
+        message:'pas trouvé',
+        status:'404',
+      });
+        },
+        'application/activity+json': function(){
+          response.send('');
+        }
+      });
     } else {
-      Note.find(
-        {'author_username':actor.username},
-        null,
-        {sort:{created_at:-1}},
-        function(error,notes){
-          response.render('user',{
-            title:actor.username+'@'+actor.host,
-            notes:notes,
-            author:actor.username,
-            host:actor.host
-          });
-        });
-      }
-    });
-  }
-);
+      response.format({
+
+        'text/html': function(){
+          Note.find(
+            {'author_username':actor.username},
+            null,
+            {sort:{created_at:-1}},
+            function(error,notes){
+              response.render('user',{
+                title:actor.username+'@'+actor.host,
+                notes:notes,
+                author:actor.username,
+                host:actor.host
+              });
+            });
+          },
+
+        'application/activity+json': function(){
+          var contentType = 'application/activity+json; charset=utf-8';
+          response.set('Content-Type', contentType);
+          var actorActivityPubObject = {
+            "@context": [
+              "https://www.w3.org/ns/activitystreams"
+            ],
+            "id": actor.url,
+            "type": "Person",
+            "following": actor.following,
+            "followers": actor.followers,
+            "inbox": actor.inbox,
+            "outbox": actor.outbox,
+            "preferredUsername": actor.username,
+            "name": actor.username,
+            "summary": "No summary",
+            "url": actor.url,
+            "endpoints": {
+              "sharedInbox": "http://" + actor.host + "/inbox"
+            },
+          //  "publicKey": {
+          //    "owner": "https://${localDomain}/",
+          //    "id": "https://${localDomain}/publickey",
+          //    "publicKeyPem": "-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA8NY/rAs24sgBWrTFiE0ovxSbv9ekts8NM109W6WM3s30SpAAmK/dPVzmMLeZxrsHaJVOFOCuSe2X2vVHUkYySMDokdIUWfHfGf+hpied8QPVJopoZq8cv3zz6HC8j7RFUaQYQMYi5JpdF7z9y0ZpI8bvRxWH2TPchJQe0uDk8Jvdlcqm/FfQIC6rQyLgLnX2/kRs0e7TeYTmMlXvtbmUqbtBd9FHIA0Kz9xyPm310N2E0Ca/pbDRYEylw5roRN1FI3teov3dR3Jxoy02iwHTeI9FOUF4K/MaS+ebZGjlI7ArJa4zHQ0gqslFlNLbi+4KdOI6CQKyjBZqRNBGlXBD8QIDAQAB-----END PUBLIC KEY-----"
+          //  }
+        };
+        response.json(actorActivityPubObject);
+        }
+      });
+    }
+  });
+});
 
 
 router.get('/:username/:id', User.ensureAuthenticate, function(request,response){

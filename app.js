@@ -16,10 +16,10 @@ var mongoose = require('mongoose');
 var db = mongoose.createConnection('mongodb://localhost:27017/mightynetwork');
 var bcrypt = require('bcryptjs');
 var detective = require('express-detective');
-
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var webfingerRouter = require('./routes/webfinger');
+var outboxRouter = require('./routes/activitypub/outbox');
 
 var app = express();
 
@@ -39,7 +39,6 @@ app.use(express.static('public'));
 app.use(express.json({type: ['application/json', 'application/activity+json', 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"']}));
 app.use(express.urlencoded({ extended: true }));
 app.use(session({secret:'jaimelechocolat', saveUninitialized:true, resave:true}));
-
 // Validator ?
 app.use(validator({
   errorFormatter: function(param,msg,value){
@@ -76,10 +75,11 @@ app.use(function(request,response,next){
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/.well-known', webfingerRouter);
+app.use('/outbox', outboxRouter);
 // catch 404 and forward to error handler
-//app.use(function(request, response, next) {
-//  next(createError(404));
-//});
+app.use(function(request, response, next) {
+  next(createError(404));
+});
 
 // error handler
 app.use(function(err, request, response, next) {
