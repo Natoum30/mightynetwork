@@ -20,7 +20,6 @@ router.post('/', function(request,response,next){
     url: webfingerRoute,
     json:true
   };
-  console.log(webfingerOptions);
   req.get(webfingerOptions, function(error, res, actorWebfinger){
     if(!error && res.statusCode === 200){
       var actorUrl = actorWebfinger.aliases[0];
@@ -33,12 +32,27 @@ router.post('/', function(request,response,next){
         json:true
       };
 
-      console.log(actorOptions);
       req.get(actorOptions, function(error,res,actor){
         if (!error && res.statusCode === 200 ) {
           response.json(actor);
-        }
-        else {console.log('error');}
+          var newActor = new Actor ({
+            username:actor.preferredUsername,
+            host:userCalledHost, // A changer
+            url:actor.url, // Webfinger
+            inbox:actor.inbox,
+            outbox:actor.outbox,
+            following:actor.following,
+            followers:actor.followers,
+          });
+
+          Actor.createActor(newActor, function(error,act){
+            if(error){
+              console.log('already in database');
+            } else {
+              console.log(newActor);
+            }
+          });
+        } else {console.log('error');}
       });
     }
   });

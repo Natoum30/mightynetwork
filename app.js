@@ -15,7 +15,6 @@ var mongo = require('mongodb');
 var mongoose = require('mongoose');
 var db = mongoose.createConnection('mongodb://localhost:27017/mightynetwork');
 var bcrypt = require('bcryptjs');
-var detective = require('express-detective');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var webfingerRouter = require('./routes/webfinger');
@@ -29,7 +28,6 @@ var app = express();
 app.set('views', path.join(__dirname, 'views')); // Pas obligatoire
 app.set('view engine', 'pug');
 
-//app.use(detective({includeHeaders: true, includeBody: true, includeQueryString: true}));
 
 app.use(logger('dev'));
 app.use(bodyParser.json());
