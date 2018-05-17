@@ -3,17 +3,29 @@ var Schema = mongoose.Schema;
 var db = mongoose.connect('mongodb://localhost:27017/mightynetwork');
 
 var noteSchema = new Schema({
-  note: {type:String, required:true},
-  created_at: Date,
-  author_id: {type:Schema.Types.ObjectId, required:true},
-  author_username:{type:String,required:true},
-  author_host:{type:String,required:true}
+  id:String,
+  actor:String,
+  type:{type:String, required:true},
+  content: {type:String, required:true},
+  to:{type:[String],required:true},
+  attributedTo:{type:String,required:true},
+  published: Date,
+  actorObject:JSON
 });
+
+noteSchema.methods.toJSON = function() {
+ var obj = this.toObject();
+ delete obj.actorObject;
+ delete obj._id;
+ delete obj.__v;
+  return obj;
+};
 
 var Note = module.exports=mongoose.model('Note', noteSchema);
 
 module.exports.createNote= function(newNote,callback){
-   if(!newNote.created_at) newNote.created_at = new Date();
+   if(!newNote.published) newNote.published = new Date();
+   newNote.id = newNote.actor + '/note/' + newNote._id;
    newNote.save(callback);
 };
 

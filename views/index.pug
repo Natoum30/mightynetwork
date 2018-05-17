@@ -8,20 +8,20 @@ block content
     |
     form(action="/", method="POST")
       .form-group 
-        textarea(name="note", placeholder="Share it with the fediverse",cols="50")
+        textarea(name="content", placeholder="Share it with the fediverse",cols="50")
       .form-group
         input(type="submit")
     h2 See some notes below :
       each note in notes
         .jumbotron
           p 
-            a(href='/users/'+ note.author_username) #{note.author_username}
-              span @#{note.author_host} 
-            span wrote : 
-            span= note.note 
-            p 
-              a(href='/users/'+ note.author_username + '/' + note.id) clic
-            p.date=note.created_at
+            a(href= note.actor)  #{note.actorObject.username}
+            span 
+            small (#{note.actorObject.username}@#{note.actorObject.host})
+          p= note.content 
+          small
+            a(href='/users/'+ note.actorObject.username + '/note/' + note.id) clic
+          p.date=note.published
       else
         .jumbotron
           p No notes yet

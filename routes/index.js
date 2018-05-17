@@ -5,13 +5,14 @@ var LocalStrategy = require('passport-local').Strategy;
 var Note = require('../models/Note');
 var User = require('../models/User');
 var Actor = require('../models/activitypub/Actor');
+var Activity = require('../models/activitypub/Activity');
 
 /* Index - Home page */
 
 router.get('/', function(request, response, next) {
   if (request.isAuthenticated())
   {
-    Note.find({}, null, {sort:{created_at: -1}}, function(err, notes){
+    Note.find({}, null, {sort:{published: -1}}, function(err, notes){
       response.render('index', {
         title: 'Home sweet home',
         notes:notes,
@@ -69,7 +70,7 @@ router.post('/register', function(request,response){
           outbox:"http://" + instance +  '/users/' + newUser.username + '/outbox',
           following:"http://" + instance +  '/users/' + newUser.username + '/following',
           followers:"http://" + instance +  '/users/' + newUser.username + '/followers',
-          created_at:newUser.created_at
+          published:newUser.created_at
         });
 
         Actor.createActor(newActor, function(error,actor){
@@ -151,8 +152,8 @@ router.get('/logout',function(request,response){
 
 /* Post a Note */
 router.post('/', User.ensureAuthenticate, function(request, response){
-  var note = request.body.note;
-  request.checkBody('note').notEmpty();
+  var content = request.body.content;
+  request.checkBody('content').notEmpty();
   var errors = request.validationErrors();
   if(errors){
     request.flash('error','You seem to have nothing to share ? Too bad !');
@@ -165,19 +166,36 @@ router.post('/', User.ensureAuthenticate, function(request, response){
       ///
       } else {
       var newNote = new Note ({
-        note:note,
-        author_id:actor._id,
-        author_username:actor.username,
-        author_host:actor.host
+        type:'Note',
+        content: content,
+        to:actor.followers,
+        attributedTo: actor.url,
+        published: Date,
+        actorObject:actor,
+        actor:actor.url
       });
 
       Note.createNote(newNote, function(error,note){
         if(error) {
           response.send('error');
         } else {
-          request.flash('alert-success','Message shared !');
-          response.location('/');
-          response.redirect('/');
+          var newActivity = new Activity ({
+            "@context": "https://www.w3.org/ns/activitystreams",
+            type : "Create",
+            to : note.to,
+            object: note.toJSON(),
+            actor:note.actor
+          });
+
+          Activity.createActivity(newActivity, function(error,activity){
+            if (error) {
+              response.send('error');
+            } else {
+              request.flash('alert-success','Message shared !');
+              response.location('/');
+              response.redirect('/');
+            }
+          });
         }
       });
     }

@@ -73,7 +73,7 @@ app.use(function(request,response,next){
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/.well-known', webfingerRouter);
-app.use('/outbox', outboxRouter);
+app.use('/users/:username/outbox', outboxRouter);
 // catch 404 and forward to error handler
 app.use(function(request, response, next) {
   next(createError(404));

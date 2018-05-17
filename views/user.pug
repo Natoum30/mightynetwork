@@ -4,15 +4,17 @@ block content
   .container
     p.lead
       !=messages()
-    h2 #{author}'s notes :
+    h2 #{author}@#{host}'s notes :
       each note in notes
         .jumbotron
           p 
-            a(href='/users/'+ author)  #{author}
-              span @#{host} 
-            span wrote : 
-            span= note.note 
-          p.date=note.created_at
+            a(href= note.actor)  #{author}
+            span 
+            small (#{author}@#{host})
+          p= note.content 
+          small 
+            a(href='/users/'+ author + '/note/' + note.id) clic
+          p.date= note.published
 
       else
         .jumbotron
