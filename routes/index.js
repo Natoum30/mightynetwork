@@ -8,7 +8,7 @@ var Actor = require('../models/activitypub/Actor');
 var Activity = require('../models/activitypub/Activity');
 
 /* Index - Home page */
-
+var instance = process.env.INSTANCE;
 router.get('/', function(request, response, next) {
   if (request.isAuthenticated())
   {
@@ -16,12 +16,14 @@ router.get('/', function(request, response, next) {
       response.render('index', {
         title: 'Home sweet home',
         notes:notes,
-        host:process.env.INSTANCE
+        host:instance
       });
     });
   } else {
-    response.render('welcome', { title: 'Welcome to mightyNetwork',         host:process.env.INSTANCE
- });
+    response.render('welcome', {
+      title: 'Welcome to ' + instance,
+      host:instance
+    });
   }
 });
 

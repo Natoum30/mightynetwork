@@ -34,10 +34,10 @@ activitySchema.methods.toJSON = function() {
 
 var Activity = module.exports = mongoose.model('Activity', activitySchema);
 
-//module.exports.createActivity= function(newActivity,callback){
-//newActivity.id = newActivity.actor + '/note/' + newActivity._id;
-//newActivity.save(callback);
-//};
+module.exports.createActivity= function(newActivity,callback){
+newActivity.id = newActivity.actor + '/note/' + newActivity._id;
+newActivity.save(callback);
+};
 //
 //module.exports.postActivity = function(message,callback){
 //  var destInbox = 'http://localhost:3000/users/nath/inbox';

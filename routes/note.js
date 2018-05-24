@@ -45,22 +45,30 @@ router.post('/', User.ensureAuthenticate, function(req, res){
             actor:note.actor
           });
 
-          Activity.createActivity(newActivity, function(error,activity){
-            if (error) {
-              res.send('error');
-            } else {
-              req.flash('alert-success','Message shared !');
-              res.location('/');
-              res.redirect('/');
-            }
-          });
+          //Activity.createActivity(newActivity, function(error,activity){
+          //  if (error) {
+          //    req.flash('alert-success','An error occured !');
+          //  }
+          //});
           // Send my message to followers
-          request({
-            url:'http://localhost:8000/users/narf/inbox',
+          var activityOptions = {
+            url:'http://localhost:8001/users/starfish/inbox',
             json:true,
             method:'POST',
             body: newActivity
+          };
+
+          request(activityOptions, function(error, response, next){
+            if (error) {
+              req.flash('alert-success','An error occured !');
+            } else {
+              console.log('coucou');
+
+            }
           });
+          req.flash('alert-success','Message shared !');
+          res.location('/');
+          res.redirect('/');
         }
       });
     }
