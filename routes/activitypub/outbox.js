@@ -3,6 +3,7 @@ var router = express.Router({mergeParams: true});
 var Collection = require('../../models/activitypub/Collection');
 var Actor = require('../../models/activitypub/Actor');
 var Activity = require('../../models/activitypub/Activity');
+var http = require('request');
 
 
 router.get('/', function(request,response){
@@ -11,8 +12,8 @@ router.get('/', function(request,response){
   var host = request.get('Host');
   var Type = Activity;
 
-  Collection.showCollection(username, host, Type, 'outbox', response);
-
+  var collection = Collection.makeCollection(username, host, Type, 'outbox', response);
+  console.log(collection);
 });
 
 

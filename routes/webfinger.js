@@ -5,7 +5,7 @@ var LocalStrategy = require('passport-local').Strategy;
 var User = require('../models/User');
 var Note = require('../models/Note');
 var Actor = require('../models/activitypub/Actor');
-var req = require('request');
+var http = require('request');
 
 
 
@@ -24,7 +24,7 @@ isWebfingerResourceValid = function(value) {
 
   if (actorParts.length !== 2) return false;
 
-
+ console.log('ok');
 //  return sanitizeHost(host, REMOTE_SCHEME.HTTP) === CONFIG.WEBSERVER.HOST;
 };
 
@@ -32,8 +32,8 @@ isWebfingerResourceValid = function(value) {
 
 /* WebFinger*/
 
-router.get('/webfinger', function (req, res, next) {
-  var value = req.query.resource;
+router.get('/webfinger', function (request, response, next) {
+  var value = request.query.resource;
   console.log(isWebfingerResourceValid(value));
   if (isWebfingerResourceValid(value)!= false)
   {
@@ -42,33 +42,38 @@ router.get('/webfinger', function (req, res, next) {
 
     var name = actorParts[0];
     var host = actorParts[1];
+    var thisHost = request.get('Host');
+    var notfound = {
+      "error":"Actor not found"
+    };
+
+    if (host != thisHost) {
+      response.json(notfound);
+    }
 
     Actor.findOne({'username':name,'host':host}, function(error,actor){
       var contentType = 'application/activity+json; charset=utf-8';
-      res.set('Content-Type', contentType);
+      response.set('Content-Type', contentType);
       if(actor){
         // Set correct content type.
 
 
-        var response = {
-          "subject": req.query.resource,
+        var res = {
+          "subject": request.query.resource,
           "aliases": [ actor.url ],
           "links": [
             {
               "rel": "self",
-              "type": "application/activity+json; profile='https://www.w3.org/ns/activitystreams'",
+              "type": "application/activity+json",
               "href": actor.url
             }
           ]
         };
         //  console.log(' ↳ Sending WebFinger response.\n');
-        res.json(response);
+        response.json(res);
       }
       if(!actor) {
-        var notfound = {
-          "error":"Actor not found"
-        };
-        res.json(notfound);
+        response.json(notfound);
       }
     });
    } else {

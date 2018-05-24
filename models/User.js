@@ -1,7 +1,9 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var bcrypt = require('bcryptjs');
-var db = mongoose.connect('mongodb://localhost:27017/mightynetwork');
+var instance = process.env.INSTANCE;
+var db = mongoose.connect('mongodb://localhost:27017/'+instance);
+
 var Actor = require('./activitypub/Actor');
 
 

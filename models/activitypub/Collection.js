@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-var db = mongoose.connect('mongodb://localhost:27017/mightynetwork');
+var instance = process.env.INSTANCE;
+var db = mongoose.connect('mongodb://localhost:27017/'+instance);
 var Actor = require('./Actor');
 var Note = require('../Note');
 var Activity = require('./Activity');
@@ -23,7 +24,7 @@ collectionSchema.methods.toJSON = function() {
 
 var Collection = module.exports = mongoose.model('Collection', collectionSchema);
 
-module.exports.showCollection= function(username,host,Type,route,response){
+module.exports.makeCollection= function(username,host,Type,route,response){
 
   Actor.findOne({'username':username,'host':host}, function (error, actor){
     if (error) {
@@ -39,7 +40,7 @@ module.exports.showCollection= function(username,host,Type,route,response){
             return type.toJSON();
           });
           var newCollection = new Collection ({
-            "@context": 	["https://www.w3.org/ns/activitystreams","https://w3id.org/security/v1"],
+            "@context": Array("https://www.w3.org/ns/activitystreams","https://w3id.org/security/v1"),
             id: actor.url + '/' + route,
             type: "OrderedCollection",
             totalItems:types.length,
@@ -48,8 +49,6 @@ module.exports.showCollection= function(username,host,Type,route,response){
           response.json(newCollection);
         }
       });
-
-
   }
 
 });

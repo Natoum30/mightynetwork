@@ -4,7 +4,7 @@ html(lang="fr")
     meta(charset="UTF-8")
     meta(name="description",content="")
     meta(name="author",content="")
-    title mightyNetwork | #{title}
+    title #{host} | #{title}
     link(href='/css/jumbotron-narrow.css', rel='stylesheet')
     link(rel='stylesheet', href='/css/bootstrap.css')
     link(rel='stylesheet', href='/css/style.css')
@@ -14,8 +14,8 @@ html(lang="fr")
         nav
           ul.nav.nav-pills.pull-right
             if !user
-              li(class=(title == 'Members' ? 'active' : ''))
-                a(href='/users/') Members
+              li(class=(title == 'Search' ? 'active' : ''))
+                a(href='/users/') Search
               li(class=(title == 'Register' ? 'active' : ''))
                 a(href='/register') Register
               li(class=(title == 'Log in' ? 'active' : ''))
@@ -23,8 +23,8 @@ html(lang="fr")
             if user   
               li(class=(title == 'user.username' ? 'active' : ''))
                 a(href='/users/'+ user.username) #{user.username}  
-              li(class=(title == 'Members' ? 'active' : ''))
-                a(href='/users/') Members              
+              li(class=(title == 'Search' ? 'active' : ''))
+                a(href='/users/') Search              
               li(class=(title == 'My settings' ? 'active' : ''))
                 a(href='/users/notifications') Notifications
               li(role='logout')

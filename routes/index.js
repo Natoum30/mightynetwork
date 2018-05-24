@@ -16,10 +16,12 @@ router.get('/', function(request, response, next) {
       response.render('index', {
         title: 'Home sweet home',
         notes:notes,
+        host:process.env.INSTANCE
       });
     });
   } else {
-    response.render('welcome', { title: 'Welcome to mightyNetwork' });
+    response.render('welcome', { title: 'Welcome to mightyNetwork',         host:process.env.INSTANCE
+ });
   }
 });
 
@@ -27,7 +29,9 @@ router.get('/', function(request, response, next) {
 
 router.get('/register', function(request, response) {
   response.render('register', {
-    title:'Register'
+    title:'Register',
+    host:process.env.INSTANCE
+
   });
 });
 
@@ -52,9 +56,9 @@ router.post('/register', function(request,response){
       username: username,
       password:password
     });
-
     User.createUser(newUser, function(error,user){
       if(error){
+        console.log('error');
         response.render('register',{
           title:'Register - Error',
           error:'username not available'
@@ -72,6 +76,7 @@ router.post('/register', function(request,response){
           followers:"http://" + instance +  '/users/' + newUser.username + '/followers',
           published:newUser.created_at
         });
+        console.log('coucou');
 
         Actor.createActor(newActor, function(error,actor){
           if(error){
@@ -150,58 +155,6 @@ router.get('/logout',function(request,response){
 });
 
 
-/* Post a Note */
-router.post('/', User.ensureAuthenticate, function(request, response){
-  var content = request.body.content;
-  request.checkBody('content').notEmpty();
-  var errors = request.validationErrors();
-  if(errors){
-    request.flash('error','You seem to have nothing to share ? Too bad !');
-    response.location('/');
-    response.redirect('/');
-  } else {
-
-    Actor.findOne({'user_id': request.user._id}, function(error,actor){
-      if(error){
-      ///
-      } else {
-      var newNote = new Note ({
-        type:'Note',
-        content: content,
-        to:actor.followers,
-        attributedTo: actor.url,
-        published: Date,
-        actorObject:actor,
-        actor:actor.url
-      });
-
-      Note.createNote(newNote, function(error,note){
-        if(error) {
-          response.send('error');
-        } else {
-          var newActivity = new Activity ({
-            "@context": "https://www.w3.org/ns/activitystreams",
-            type : "Create",
-            to : note.to,
-            object: note.toJSON(),
-            actor:note.actor
-          });
-
-          Activity.createActivity(newActivity, function(error,activity){
-            if (error) {
-              response.send('error');
-            } else {
-              request.flash('alert-success','Message shared !');
-              response.location('/');
-              response.redirect('/');
-            }
-          });
-        }
-      });
-    }
-  });
-  }
-});
 
 /* Notes db routes */
 

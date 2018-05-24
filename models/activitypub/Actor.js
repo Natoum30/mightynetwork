@@ -1,23 +1,22 @@
 // Modèle Actor (pas encore ActivityPub)
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-var db = mongoose.connect('mongodb://localhost:27017/mightynetwork');
-
+var instance = process.env.INSTANCE;
+var db = mongoose.connect('mongodb://localhost:27017/'+instance);
 var actorSchema = new Schema({
   user_id:{type:Schema.Types.ObjectId, required:false},
   url:{type:String,required:true},
   username:{type:String,required:true},
   host:{type:String,require:true},
-  inbox:{type:String,required:true},
-  outbox:{type:String,required:true},
-  following:{type:String, required:true},
-  followers:{type:String, required:true},
+  inbox:{type:String,required:true, unique:true},
+  outbox:{type:String,required:true, unique:true},
+  following:{type:String, required:true, unique:true},
+  followers:{type:String, required:true, unique:true},
   created_at:Date
 });
 
-var Actor = module.exports = mongoose.model('Actor', actorSchema);
 
-actorSchema.index({username:1, host:1}, {unique:true});
+var Actor = module.exports = mongoose.model('Actor', actorSchema);
 
 
 module.exports.createActor= function(newActor,callback){
@@ -52,15 +51,3 @@ module.exports.showActorActivityPubObject= function(actor,response){
   };
   response.json(actorActivityPubObject);
 };
-
-// var Note = module.exports=mongoose.model('Note', noteSchema);
-//
-// module.exports.createNote= function(newNote,callback){
-   // if(!newNote.created_at) newNote.created_at = new Date();
-   // newNote.save(callback);
-// };
-//
-//
-// module.exports.getNoteById=function(id,callback){
-  // Note.findById(id,callback);
-// };
