@@ -4,6 +4,10 @@ var Schema = mongoose.Schema;
 var instance = process.env.INSTANCE;
 var db = mongoose.connect('mongodb://localhost:27017/' + instance);
 var Follow = require('./Follow');
+var pem = require('pem');
+pem.config({
+  pathOpenSSL: '/usr/bin/openssl'
+});
 
 var actorSchema = new Schema({
   user_id: {
@@ -42,6 +46,14 @@ var actorSchema = new Schema({
     required: true,
     unique: true
   },
+  publicKey: {
+    type: String,
+    unique: true
+  },
+  privateKey: {
+    type: String,
+    unique: true
+  },
   created_at: Date
 });
 
@@ -50,23 +62,62 @@ actorSchema.methods.toJSON = function() {
   delete obj._id;
   delete obj.__v;
   delete obj.user_id;
+  delete obj.privateKey;
   return obj;
 };
 
 var Actor = module.exports = mongoose.model('Actor', actorSchema);
 
 // actorSchema.index({username:1, host:1}, {unique:true});
+module.exports.createPublicAndPrivateKey = function(actor) {
+
+};
+
 
 module.exports.createActor = function(newActor, callback) {
   if (!newActor.created_at) newActor.created_at = new Date();
-  newActor.save(callback);
+
+  console.log('Generating a RSA key...');
+  pem.createPrivateKey(function(error, response) {
+    if (error) {
+      console.log('privateKey error');
+      console.log('ERREUR PRIVATE : ');
+      console.log(error);
+    }
+    if (response) {
+      var privateKey = response.key;
+      newActor.privateKey = privateKey;
+      //console.log('PRIVATE KEY : ');
+      //console.log(privateKey);
+
+      pem.getPublicKey(privateKey, function(error, response) {
+        if (error) {
+          console.log('public key error');
+          console.log('ERREUR PUBLIC : ');
+          console.log(error);
+        }
+        if (!error) {
+          var publicKey = response.publicKey;
+          //  console.log('PUBLIC KEY : ');
+          //  console.log(publicKey);
+          newActor.publicKey = publicKey;
+          //  console.log(actor);
+          newActor.save(callback);
+
+        }
+      });
+    }
+
+  });
+
 
 };
 
 module.exports.showActorActivityPubObject = function(actor, response) {
   var actorActivityPubObject = {
     "@context": [
-      "https://www.w3.org/ns/activitystreams"
+      "https://www.w3.org/ns/activitystreams",
+      "https://w3id.org/security/v1"
     ],
     "id": actor.url,
     "type": "Person",
@@ -81,11 +132,19 @@ module.exports.showActorActivityPubObject = function(actor, response) {
     "endpoints": {
       "sharedInbox": "http://" + actor.host + "/inbox"
     },
-    //  "publicKey": {
-    //    "owner": "https://${localDomain}/",
-    //    "id": "https://${localDomain}/publickey",
-    //    "publicKeyPem": "-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA8NY/rAs24sgBWrTFiE0ovxSbv9ekts8NM109W6WM3s30SpAAmK/dPVzmMLeZxrsHaJVOFOCuSe2X2vVHUkYySMDokdIUWfHfGf+hpied8QPVJopoZq8cv3zz6HC8j7RFUaQYQMYi5JpdF7z9y0ZpI8bvRxWH2TPchJQe0uDk8Jvdlcqm/FfQIC6rQyLgLnX2/kRs0e7TeYTmMlXvtbmUqbtBd9FHIA0Kz9xyPm310N2E0Ca/pbDRYEylw5roRN1FI3teov3dR3Jxoy02iwHTeI9FOUF4K/MaS+ebZGjlI7ArJa4zHQ0gqslFlNLbi+4KdOI6CQKyjBZqRNBGlXBD8QIDAQAB-----END PUBLIC KEY-----"
-    //  }
+    "publicKey": {
+      "owner": actor.url,
+      "id": actor.url + "#main-key",
+      "publicKeyPem": "-----BEGIN PUBLIC KEY-----" + actor.publicKey + "-----END PUBLIC KEY-----"
+    }
   };
   response.json(actorActivityPubObject);
+};
+
+module.exports.isSignatueVerified = function(actor, object) {
+
+};
+
+module.exports.signObject = function(actor, object) {
+
 };

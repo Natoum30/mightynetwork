@@ -87,11 +87,14 @@ router.post('/register', function(request, response) {
 
         Actor.createActor(newActor, function(error, actor) {
           if (error) {
+            console.log('coucou ' + error);
             response.render('regiser', {
               title: 'Register - Error',
               error: 'username not avaible'
             });
           } else {
+            console.log('coucou 2' + actor);
+
             var newFollowers = new Follow({
               actor: actor.url,
               type: "Followers",

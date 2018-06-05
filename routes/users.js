@@ -6,8 +6,10 @@ var User = require('../models/User');
 var Note = require('../models/Note');
 var Actor = require('../models/activitypub/Actor');
 var http = require('request');
-//var Actor = require('../models/activitypub/Actor');
+var Actor = require('../models/activitypub/Actor');
 var instance = process.env.INSTANCE;
+
+
 /* Search bar - Members routes */
 router.post('/', function(request, response, next) {
 
