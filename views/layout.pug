@@ -4,7 +4,7 @@ html(lang="fr")
     meta(charset="UTF-8")
     meta(name="description",content="")
     meta(name="author",content="")
-    title #{host} | #{title}
+    title #{instance} | #{title}
     link(href='/css/jumbotron-narrow.css', rel='stylesheet')
     link(rel='stylesheet', href='/css/bootstrap.css')
     link(rel='stylesheet', href='/css/style.css')
@@ -31,5 +31,5 @@ html(lang="fr")
                 a(href='/logout').text-muted Log out
               
           h2
-            a(href='/') #{host}
+            a(href='/') #{instance}
     block content

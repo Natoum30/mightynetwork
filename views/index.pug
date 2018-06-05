@@ -15,7 +15,7 @@ block content
       each note in notes
         .jumbotron
           p 
-            a(href= note.actor)  #{note.actorObject.username}
+            a(href= '/users/'+ note.actorObject.username)  #{note.actorObject.username}
             span 
             small (#{note.actorObject.username}@#{note.actorObject.host})
           p= note.content 

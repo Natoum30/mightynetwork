@@ -1,0 +1,216 @@
+diff --git a/data/WiredTiger.turtle b/data/WiredTiger.turtle
+index 0549258..8f440f6 100644
+--- a/data/WiredTiger.turtle
++++ b/data/WiredTiger.turtle
+@@ -3,4 +3,4 @@ WiredTiger 3.0.0: (January  8, 2018)
+ WiredTiger version
+ major=3,minor=0,patch=0
+ file:WiredTiger.wt
+-access_pattern_hint=none,allocation_size=4KB,app_metadata=,assert=(commit_timestamp=none,read_timestamp=none),block_allocation=best,block_compressor=,cache_resident=false,checkpoint=(WiredTigerCheckpoint.515=(addr="018081e49b46fbce8181e4517730cc8281e4c01fb392808080e302afc0e301cfc0",order=515,time=1527157618,size=131072,write_gen=1424)),checkpoint_lsn=(42,225408),checksum=uncompressed,collator=,columns=,dictionary=0,encryption=(keyid=,name=),format=btree,huffman_key=,huffman_value=,id=0,ignore_in_memory_cache_size=false,internal_item_max=0,internal_key_max=0,internal_key_truncate=true,internal_page_max=4KB,key_format=S,key_gap=10,leaf_item_max=0,leaf_key_max=0,leaf_page_max=32KB,leaf_value_max=0,log=(enabled=true),memory_page_max=5MB,os_cache_dirty_max=0,os_cache_max=0,prefix_compression=false,prefix_compression_min=4,split_deepen_min_child=0,split_deepen_per_child=0,split_pct=90,value_format=S,version=(major=1,minor=1)
++access_pattern_hint=none,allocation_size=4KB,app_metadata=,assert=(commit_timestamp=none,read_timestamp=none),block_allocation=best,block_compressor=,cache_resident=false,checkpoint=(WiredTigerCheckpoint.478=(addr="018081e41d209cd58181e45a621ef78281e457dfe893808080e3039fc0e301afc0",order=478,time=1527150587,size=122880,write_gen=1307)),checkpoint_lsn=(42,135168),checksum=uncompressed,collator=,columns=,dictionary=0,encryption=(keyid=,name=),format=btree,huffman_key=,huffman_value=,id=0,ignore_in_memory_cache_size=false,internal_item_max=0,internal_key_max=0,internal_key_truncate=true,internal_page_max=4KB,key_format=S,key_gap=10,leaf_item_max=0,leaf_key_max=0,leaf_page_max=32KB,leaf_value_max=0,log=(enabled=true),memory_page_max=5MB,os_cache_dirty_max=0,os_cache_max=0,prefix_compression=false,prefix_compression_min=4,split_deepen_min_child=0,split_deepen_per_child=0,split_pct=90,value_format=S,version=(major=1,minor=1)
+diff --git a/data/WiredTiger.wt b/data/WiredTiger.wt
+index ef3e23e..e2fcf03 100644
+Binary files a/data/WiredTiger.wt and b/data/WiredTiger.wt differ
+diff --git a/data/_mdb_catalog.wt b/data/_mdb_catalog.wt
+index 75a37c1..a9a0911 100644
+Binary files a/data/_mdb_catalog.wt and b/data/_mdb_catalog.wt differ
+diff --git a/data/collection-43--3910071094524430566.wt b/data/collection-43--3910071094524430566.wt
+deleted file mode 100644
+index 5ece2df..0000000
+Binary files a/data/collection-43--3910071094524430566.wt and /dev/null differ
+diff --git a/data/collection-45--3910071094524430566.wt b/data/collection-45--3910071094524430566.wt
+deleted file mode 100644
+index 5c572e8..0000000
+Binary files a/data/collection-45--3910071094524430566.wt and /dev/null differ
+diff --git a/data/collection-47--3910071094524430566.wt b/data/collection-47--3910071094524430566.wt
+deleted file mode 100644
+index 15a717c..0000000
+Binary files a/data/collection-47--3910071094524430566.wt and /dev/null differ
+diff --git a/data/diagnostic.data/metrics.2018-05-24T08-00-42Z-00000 b/data/diagnostic.data/metrics.2018-05-24T08-00-42Z-00000
+index 4c7d4cd..723616e 100644
+Binary files a/data/diagnostic.data/metrics.2018-05-24T08-00-42Z-00000 and b/data/diagnostic.data/metrics.2018-05-24T08-00-42Z-00000 differ
+diff --git a/data/diagnostic.data/metrics.interim b/data/diagnostic.data/metrics.interim
+index 7a96e7d..4b65cf4 100644
+Binary files a/data/diagnostic.data/metrics.interim and b/data/diagnostic.data/metrics.interim differ
+diff --git a/data/index-44--3910071094524430566.wt b/data/index-44--3910071094524430566.wt
+deleted file mode 100644
+index 6dbb017..0000000
+Binary files a/data/index-44--3910071094524430566.wt and /dev/null differ
+diff --git a/data/index-46--3910071094524430566.wt b/data/index-46--3910071094524430566.wt
+deleted file mode 100644
+index 89181e3..0000000
+Binary files a/data/index-46--3910071094524430566.wt and /dev/null differ
+diff --git a/data/index-48--3910071094524430566.wt b/data/index-48--3910071094524430566.wt
+deleted file mode 100644
+index f7c63f2..0000000
+Binary files a/data/index-48--3910071094524430566.wt and /dev/null differ
+diff --git a/data/journal/WiredTigerLog.0000000042 b/data/journal/WiredTigerLog.0000000042
+index 9dc0794..8624f6e 100644
+Binary files a/data/journal/WiredTigerLog.0000000042 and b/data/journal/WiredTigerLog.0000000042 differ
+diff --git a/data/sizeStorer.wt b/data/sizeStorer.wt
+index 347455d..171d678 100644
+Binary files a/data/sizeStorer.wt and b/data/sizeStorer.wt differ
+diff --git a/models/activitypub/Activity.js b/models/activitypub/Activity.js
+index 466e066..4185487 100644
+--- a/models/activitypub/Activity.js
++++ b/models/activitypub/Activity.js
+@@ -34,10 +34,10 @@ activitySchema.methods.toJSON = function() {
+ 
+ var Activity = module.exports = mongoose.model('Activity', activitySchema);
+ 
+-module.exports.createActivity= function(newActivity,callback){
+-newActivity.id = newActivity.actor + '/note/' + newActivity._id;
+-newActivity.save(callback);
+-};
++//module.exports.createActivity= function(newActivity,callback){
++//newActivity.id = newActivity.actor + '/note/' + newActivity._id;
++//newActivity.save(callback);
++//};
+ //
+ //module.exports.postActivity = function(message,callback){
+ //  var destInbox = 'http://localhost:3000/users/nath/inbox';
+diff --git a/routes/activitypub/inbox.js b/routes/activitypub/inbox.js
+index 9edc2a7..cef7004 100644
+--- a/routes/activitypub/inbox.js
++++ b/routes/activitypub/inbox.js
+@@ -2,36 +2,13 @@ var express = require('express');
+ var router = express.Router({mergeParams: true});
+ var Collection = require('../../models/activitypub/Collection');
+ var Actor = require('../../models/activitypub/Actor');
+-var Note = require('../../models/Note');
+ var Activity = require('../../models/activitypub/Activity');
+-var request = require('request');
++var http = require('request');
+ 
+-router.post('/', function(req,res){
+-var username = req.params.username;
++router.post('/', function(request,response){
+ 
+-var activity = req.body;
+-
+-if (activity.type === 'Create') {
+-  var receivedNote = activity.object;
+-
+-  Actor.findOne({'url': receivedNote.actor}, function(error,actor){
+-    var newNote = new Note ({
+-      type:'Note',
+-      content: receivedNote.content,
+-      to:receivedNote.to,
+-      attributedTo: receivedNote.attributedTo,
+-      published: receivedNote.published,
+-      actorObject:actor,
+-      actor:receivedNote.actor
+-    });
+-
+-    Note.createNote(newNote);
+-    console.log(newNote);
+-  });
+-
+-
+-
+-}
++const activity = request.body;
+ });
+ 
++
+ module.exports = router;
+diff --git a/routes/index.js b/routes/index.js
+index 74c43b2..65b4087 100644
+--- a/routes/index.js
++++ b/routes/index.js
+@@ -8,7 +8,7 @@ var Actor = require('../models/activitypub/Actor');
+ var Activity = require('../models/activitypub/Activity');
+ 
+ /* Index - Home page */
+-var instance = process.env.INSTANCE;
++
+ router.get('/', function(request, response, next) {
+   if (request.isAuthenticated())
+   {
+@@ -16,14 +16,12 @@ router.get('/', function(request, response, next) {
+       response.render('index', {
+         title: 'Home sweet home',
+         notes:notes,
+-        host:instance
++        host:process.env.INSTANCE
+       });
+     });
+   } else {
+-    response.render('welcome', {
+-      title: 'Welcome to ' + instance,
+-      host:instance
+-    });
++    response.render('welcome', { title: 'Welcome to mightyNetwork',         host:process.env.INSTANCE
++ });
+   }
+ });
+ 
+diff --git a/routes/note.js b/routes/note.js
+index 163bf92..9cd8e23 100644
+--- a/routes/note.js
++++ b/routes/note.js
+@@ -45,30 +45,22 @@ router.post('/', User.ensureAuthenticate, function(req, res){
+             actor:note.actor
+           });
+ 
+-          //Activity.createActivity(newActivity, function(error,activity){
+-          //  if (error) {
+-          //    req.flash('alert-success','An error occured !');
+-          //  }
+-          //});
++          Activity.createActivity(newActivity, function(error,activity){
++            if (error) {
++              res.send('error');
++            } else {
++              req.flash('alert-success','Message shared !');
++              res.location('/');
++              res.redirect('/');
++            }
++          });
+           // Send my message to followers
+-          var activityOptions = {
+-            url:'http://localhost:8001/users/starfish/inbox',
++          request({
++            url:'http://localhost:8000/users/narf/inbox',
+             json:true,
+             method:'POST',
+             body: newActivity
+-          };
+-
+-          request(activityOptions, function(error, response, next){
+-            if (error) {
+-              req.flash('alert-success','An error occured !');
+-            } else {
+-              console.log('coucou');
+-
+-            }
+           });
+-          req.flash('alert-success','Message shared !');
+-          res.location('/');
+-          res.redirect('/');
+         }
+       });
+     }
+diff --git a/views/layout.pug b/views/layout.pug
+index 9af2a01..788ca38 100644
+--- a/views/layout.pug
++++ b/views/layout.pug
+@@ -31,5 +31,5 @@ html(lang="fr")
+                 a(href='/logout').text-muted Log out
+               
+           h2
+-            a(href='/') #{host}
++            a(href='/') mightyNetwork
+     block content
+diff --git a/views/welcome.pug b/views/welcome.pug
+index d4fca67..9f31198 100644
+--- a/views/welcome.pug
++++ b/views/welcome.pug
+@@ -5,6 +5,6 @@ block content
+ 		p.lead
+ 			!=messages()
+ 		
+-		h2 Welcome to the #{host}	
++		h2 Welcome to the mightyNetwork
+ 		| please register or log in
+ 		h2

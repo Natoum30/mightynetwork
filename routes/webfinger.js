@@ -12,7 +12,7 @@ var http = require('request');
 
 isWebfingerResourceValid = function(value) {
 
-  exists = function (value) {
+  exists = function(value) {
     return value !== undefined && value !== null;
   };
 
@@ -24,19 +24,18 @@ isWebfingerResourceValid = function(value) {
 
   if (actorParts.length !== 2) return false;
 
- console.log('ok');
-//  return sanitizeHost(host, REMOTE_SCHEME.HTTP) === CONFIG.WEBSERVER.HOST;
+  console.log('ok');
+  //  return sanitizeHost(host, REMOTE_SCHEME.HTTP) === CONFIG.WEBSERVER.HOST;
 };
 
 
 
 /* WebFinger*/
 
-router.get('/webfinger', function (request, response, next) {
+router.get('/webfinger', function(request, response, next) {
   var value = request.query.resource;
   console.log(isWebfingerResourceValid(value));
-  if (isWebfingerResourceValid(value)!= false)
-  {
+  if (isWebfingerResourceValid(value) != false) {
     var actorWithHost = value.substr(5);
     var actorParts = actorWithHost.split('@');
 
@@ -44,39 +43,38 @@ router.get('/webfinger', function (request, response, next) {
     var host = actorParts[1];
     var thisHost = request.get('Host');
     var notfound = {
-      "error":"Actor not found"
+      "error": "Actor not found"
     };
 
     if (host != thisHost) {
       response.json(notfound);
     }
 
-    Actor.findOne({'username':name,'host':host}, function(error,actor){
-      var contentType = 'application/activity+json; charset=utf-8';
-      response.set('Content-Type', contentType);
-      if(actor){
+    Actor.findOne({
+      'username': name,
+      'host': host
+    }, function(error, actor) {
+      if (actor) {
         // Set correct content type.
 
 
         var res = {
           "subject": request.query.resource,
-          "aliases": [ actor.url ],
-          "links": [
-            {
-              "rel": "self",
-              "type": "application/activity+json",
-              "href": actor.url
-            }
-          ]
+          "aliases": [actor.url],
+          "links": [{
+            "rel": "self",
+            "type": "application/activity+json",
+            "href": actor.url
+          }]
         };
         //  console.log(' ↳ Sending WebFinger response.\n');
         response.json(res);
       }
-      if(!actor) {
+      if (!actor) {
         response.json(notfound);
       }
     });
-   } else {
+  } else {
     console.log('error');
   }
 });
@@ -84,4 +82,4 @@ router.get('/webfinger', function (request, response, next) {
 
 
 
-module.exports=router;
+module.exports = router;
