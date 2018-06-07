@@ -63,5 +63,3 @@ typings/
 .idea
 # Dependency directory
 bower_components
-# Data directory
-data/

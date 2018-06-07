@@ -66,12 +66,12 @@ router.post('/', function(req, res) {
   if (activity.type === 'Follow') {
     Actor.findOne({
       'url': activity.object
-    }, function(error, sender) {
-      if (sender) {
+    }, function(error, actorWhoReceiveFollow) {
+      if (actorWhoReceiveFollow) {
 
         var newFollower = activity.actor;
         Follow.update({
-          actor: sender.url,
+          actor: actorWhoReceiveFollow.url,
           type: "Followers"
         }, {
           $addToSet: {
@@ -86,27 +86,29 @@ router.post('/', function(req, res) {
           }
         });
 
-
         var acceptObject = {
           "@context": "https://www.w3.org/ns/activitystreams",
           type: "Accept",
-          actor: sender.url,
+          actor: actorWhoReceiveFollow.url,
           object: activity
         };
 
         Actor.findOne({
           'url': activity.actor
-        }, function(error, recipient) {
-          if (recipient) {
+        }, function(error, acceptRecipient) {
+          if (acceptRecipient) {
+
+            Activity.signObject(actorWhoReceiveFollow, acceptObject);
+
             var acceptOptions = {
-              url: recipient.inbox,
+              url: acceptRecipient.inbox,
               json: true,
               method: 'POST',
               body: acceptObject
             };
             request(acceptOptions);
           }
-          if (!recipient) {
+          if (!acceptRecipient) {
             var actorOptions = {
               url: activity.actor,
               headers: {
@@ -128,6 +130,7 @@ router.post('/', function(req, res) {
                   outbox: actor.outbox,
                   following: actor.following,
                   followers: actor.followers,
+                  publicKey: actor.publicKey.publicKeyPem
                 });
                 Actor.createActor(newActor, function(error, act) {
                   if (error) {

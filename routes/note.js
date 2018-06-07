@@ -66,6 +66,8 @@ router.post('/', User.ensureAuthenticate, function(req, res) {
                     'url': recipient
                   }, function(error, actor) {
 
+                    Activity.signObject(actor, newActivity);
+
                     var activityOptions = {
                       url: actor.inbox,
                       json: true,

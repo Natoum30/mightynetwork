@@ -135,7 +135,7 @@ module.exports.showActorActivityPubObject = function(actor, response) {
     "publicKey": {
       "owner": actor.url,
       "id": actor.url + "#main-key",
-      "publicKeyPem": "-----BEGIN PUBLIC KEY-----" + actor.publicKey + "-----END PUBLIC KEY-----"
+      "publicKeyPem": actor.publicKey
     }
   };
   response.json(actorActivityPubObject);

@@ -83,17 +83,16 @@ router.post('/register', function(request, response) {
           followers: "http://" + host + '/users/' + newUser.username + '/followers',
           published: newUser.created_at
         });
-        console.log('coucou');
 
         Actor.createActor(newActor, function(error, actor) {
           if (error) {
-            console.log('coucou ' + error);
+            console.log(error);
             response.render('regiser', {
               title: 'Register - Error',
               error: 'username not avaible'
             });
           } else {
-            console.log('coucou 2' + actor);
+            console.log(actor);
 
             var newFollowers = new Follow({
               actor: actor.url,

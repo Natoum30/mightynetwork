@@ -5,6 +5,10 @@ var db = mongoose.connect('mongodb://localhost:27017/' + instance);
 var Actor = require('./Actor');
 var Note = require('../Note');
 var http = require('request');
+var jsonld = require('jsonld');
+var jsig = require('jsonld-signatures');
+
+jsig.use('jsonld', jsonld);
 
 var activitySchema = new Schema({
   "@context": String,
@@ -39,6 +43,45 @@ var Activity = module.exports = mongoose.model('Activity', activitySchema);
 module.exports.createActivity = function(newActivity, callback) {
   newActivity.id = newActivity.actor + '/note/' + newActivity._id;
   newActivity.save(callback);
+};
+
+module.exports.signObject = function(byActor, object) {
+  var options = {
+    privateKeyPem: byActor.privateKey,
+    creator: byActor.url,
+    algorithm: 'RsaSignature2017'
+  };
+  return jsig.promises.sign(object, options);
+};
+
+module.exports.isSignatureVerified = function(fromActor, signedObject) {
+  var publicKeyObject = {
+    '@context': jsig.SECURITY_CONTEXT_URL,
+    '@id': fromActor.url,
+    '@type': 'CryptographicKey',
+    owner: fromActor.url,
+    publicKeyPem: fromActor.publicKey
+  };
+
+  var publicKeyOwnerObject = {
+    '@context': jsig.SECURITY_CONTEXT_URL,
+    '@id': fromActor.url,
+    publicKey: signedObject.publicKey
+  };
+
+  var options = {
+    publicKey: publicKeyObject,
+    publicKeyOwner: publicKeyOwnerObject
+  };
+
+  return jsig.promises.verify(signedDocument, options)
+    .catch(err => {
+      logger.error('Cannot check signature.', {
+        err
+      })
+      return false
+    })
+
 };
 //
 //module.exports.postActivity = function(message,callback){

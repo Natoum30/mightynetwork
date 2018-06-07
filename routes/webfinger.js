@@ -10,9 +10,9 @@ var http = require('request');
 
 
 
-isWebfingerResourceValid = function(value) {
+var isWebfingerResourceValid = function(value) {
 
-  exists = function(value) {
+  var exists = function(value) {
     return value !== undefined && value !== null;
   };
 
