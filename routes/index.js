@@ -91,6 +91,7 @@ router.post('/register', function(request, response) {
               title: 'Register - Error',
               error: 'username not avaible'
             });
+
           } else {
             console.log(actor);
 
