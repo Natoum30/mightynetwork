@@ -62,6 +62,7 @@ router.post('/', function(request, response, next) {
             if (userCalledHost === request.get('Host')) {
               response.redirect('users/' + actor.preferredUsername);
             } else {
+              console.log("Creating new actor...");
               var newActor = new Actor({
                 username: actor.preferredUsername,
                 host: userCalledHost, // A changer
@@ -70,9 +71,11 @@ router.post('/', function(request, response, next) {
                 outbox: actor.outbox,
                 following: actor.following,
                 followers: actor.followers,
+                publicKey: actor.publicKey.publicKeyPem
               });
+              console.log(newActor);
 
-              Actor.createActor(newActor, function(error, act) {
+              Actor.createRemoteActor(newActor, function(error, act) {
                 if (error) {
                   console.log('already in database');
                 } else {
@@ -97,32 +100,14 @@ router.post('/', function(request, response, next) {
     }
   });
 
-
-
-
-
-  //  Actor.findOne({'username':user_searched,'host':host}, function(error,actor){
-  //    if(actor){
-  //      response.redirect('/users/'+ actor.username);
-  //    } else {
-  //      Actor.find({'username':user_searched}, function(error,actors){
-  //        if(actors.length>0){
-  //          response.render('members',{
-  //            title:'Members',
-  //            actors:actors,
-  //            subtitle:'Maybe you are looking for:'
-  //          });
-  //        } else {
-  //          response.render('members',{
-  //            title:'Members',
-  //            nofound:true,
-  //            subtitle:'No member found'
-  //          });
-  //        }
-  //      });
-  //    }
-  //  });
 });
+
+
+
+
+
+
+
 
 
 router.get('/', function(request, response) {

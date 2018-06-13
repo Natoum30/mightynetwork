@@ -40,7 +40,7 @@ router.post('/', User.ensureAuthenticate, function(req, res) {
             to: recipients,
             attributedTo: actor.url,
             published: Date,
-            actorObject: actor,
+            actorObject: actor.toJSON(),
             actor: actor.url
           });
 

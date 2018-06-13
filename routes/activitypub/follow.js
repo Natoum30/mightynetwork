@@ -7,6 +7,11 @@ var Actor = require('../../models/activitypub/Actor');
 var User = require('../../models/User');
 var Follow = require('../../models/activitypub/Follow');
 var request = require('request');
+var Activity = require('../../models/activitypub/Activity');
+var jsonld = require('jsonld');
+var jsig = require('jsonld-signatures');
+jsig.use('jsonld', jsonld);
+
 
 router.get('/followers', function(req, res) {
   var username = req.params.username;
@@ -94,25 +99,63 @@ router.post('/follow', function(req, res) {
       'username': req.user.username,
       'host': req.get('Host')
     }, function(error, sender) {
-      console.log(sender);
       var followObject = {
-        "@context": "https://www.w3.org/ns/activitystreams",
+        "@context": [
+          "https://www.w3.org/ns/activitystreams",
+          'https://w3id.org/security/v1',
+          {
+            RsaSignature2017: 'https://w3id.org/security#RsaSignature2017'
+          }
+        ],
+        id: sender.url + "/follows/" + recipient._id,
         type: "Follow",
         summary: '',
         actor: sender.url,
-        object: recipient.url
-      };
-      var followOptions = {
-        url: recipient.inbox,
-        json: true,
-        method: 'POST',
-        headers: {
-          'Accept': 'application/activity+json'
-        },
-        body: followObject
+        object: recipient.url,
+
       };
 
-      request(followOptions);
+      console.log(followObject);
+
+
+      jsig.sign(followObject, {
+        privateKeyPem: sender.privateKey,
+        creator: sender.url,
+        algorithm: 'RsaSignature2017'
+
+      }, function(err, signedFollowObject) {
+        if (err) {
+          return console.log('Signing error:', err);
+        }
+
+        console.log('Signed document:', signedFollowObject);
+
+        var keyId = "acct:" + sender.username + "@" + sender.host;
+        console.log(keyId);
+        var httpSignatureOptions = {
+          algorithm: 'rsa-sha256',
+          authorizationHeaderName: 'Signature',
+          keyId,
+          key: sender.privateKey
+        };
+
+        var followOptions = {
+          url: recipient.inbox,
+          json: true,
+          method: 'POST',
+          headers: {
+            'Accept': 'application/activity+json'
+          },
+          httpSignature: httpSignatureOptions,
+          body: signedFollowObject
+        };
+
+        request(followOptions);
+        console.log(res.body);
+
+      });
+
+
       req.flash('alert-success', 'Request sent');
       res.location('/users/' + recipient.username);
       res.redirect('/users/' + recipient.username);

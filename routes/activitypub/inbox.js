@@ -9,6 +9,10 @@ var Note = require('../../models/Note');
 var User = require('../../models/User');
 var Activity = require('../../models/activitypub/Activity');
 var request = require('request');
+var jsonld = require('jsonld');
+var jsig = require('jsonld-signatures');
+jsig.use('jsonld', jsonld);
+
 
 router.post('/', function(req, res) {
   var username = req.params.username;
@@ -43,9 +47,10 @@ router.post('/', function(req, res) {
           outbox: senderActorObject.outbox,
           following: senderActorObject.following,
           followers: senderActorObject.followers,
+          publicKey: senderActorObject.publicKey.publicKeyPem
         });
 
-        Actor.createActor(newActor, function(error, act) {
+        Actor.createRemoteActor(newActor, function(error, act) {
           var newNote = new Note({
             type: 'Note',
             content: receivedNote.content,
@@ -87,74 +92,120 @@ router.post('/', function(req, res) {
         });
 
         var acceptObject = {
-          "@context": "https://www.w3.org/ns/activitystreams",
+          "@context": [
+            "https://www.w3.org/ns/activitystreams",
+            'https://w3id.org/security/v1',
+            {
+              RsaSignature2017: 'https://w3id.org/security#RsaSignature2017'
+            }
+          ],
+          id: actorWhoReceiveFollow.url + '/accept/' + actorWhoReceiveFollow.id,
           type: "Accept",
           actor: actorWhoReceiveFollow.url,
           object: activity
         };
 
-        Actor.findOne({
-          'url': activity.actor
-        }, function(error, acceptRecipient) {
-          if (acceptRecipient) {
+        jsig.sign(acceptObject, {
+          privateKeyPem: actorWhoReceiveFollow.privateKey,
+          creator: actorWhoReceiveFollow.url,
+          algorithm: 'RsaSignature2017'
 
-            Activity.signObject(actorWhoReceiveFollow, acceptObject);
-
-            var acceptOptions = {
-              url: acceptRecipient.inbox,
-              json: true,
-              method: 'POST',
-              body: acceptObject
-            };
-            request(acceptOptions);
+        }, function(err, signedAcceptObject) {
+          if (err) {
+            return console.log('Signing error:', err);
           }
-          if (!acceptRecipient) {
-            var actorOptions = {
-              url: activity.actor,
-              headers: {
-                'Accept': 'application/activity+json'
-              },
-              json: true
-            };
-            request.get(actorOptions, function(error, res, actor) {
-              if (!error && res.statusCode === 200) {
-                var strUrl = actor.url;
-                var splitStrUrl = strUrl.split('/');
-                var actorHost = splitStrUrl[2];
+          console.log('Signed document:', signedAcceptObject);
 
-                var newActor = new Actor({
-                  username: actor.preferredUsername,
-                  host: actor.host || actorHost, // A changer
-                  url: actor.url, // Webfinger
-                  inbox: actor.inbox,
-                  outbox: actor.outbox,
-                  following: actor.following,
-                  followers: actor.followers,
-                  publicKey: actor.publicKey.publicKeyPem
-                });
-                Actor.createActor(newActor, function(error, act) {
-                  if (error) {
-                    console.log('already in database');
-                  } else {
-                    console.log(newActor);
-                  }
-                });
-                var acceptOptions = {
-                  url: newActor.inbox,
-                  json: true,
-                  method: 'POST',
-                  headers: {
-                    'Accept': 'application/activity+json'
-                  },
-                  body: acceptObject
-                };
-                request(acceptOptions);
-              } else {
-                console.log('error');
-              }
-            });
-          }
+          Actor.findOne({
+            'url': activity.actor
+          }, function(error, acceptRecipient) {
+            if (acceptRecipient) {
+
+              console.log(acceptObject);
+
+              var httpSignatureOptions = {
+                algorithm: 'rsa-sha256',
+                authorizationHeaderName: 'Signature',
+                keyId,
+                key: actorWhoReceiveFollow.privateKey
+              };
+
+              var acceptOptions = {
+                url: acceptRecipient.inbox,
+                json: true,
+                method: 'POST',
+                body: signedAcceptObject,
+                httpSignature: httpSignatureOptions
+              };
+
+              request(acceptOptions);
+            }
+            if (!acceptRecipient) {
+              var actorOptions = {
+                url: activity.actor,
+                headers: {
+                  'Accept': 'application/activity+json'
+                },
+                json: true
+              };
+              request.get(actorOptions, function(error, res, actor) {
+                if (!error && res.statusCode === 200) {
+                  var strUrl = actor.url;
+                  var splitStrUrl = strUrl.split('/');
+                  var actorHost = splitStrUrl[2];
+                  var newActor = new Actor({
+                    username: actor.preferredUsername,
+                    host: actor.host || actorHost, // A changer
+                    url: actor.url, // Webfinger
+                    inbox: actor.inbox,
+                    outbox: actor.outbox,
+                    following: actor.following,
+                    followers: actor.followers,
+                    publicKey: actor.publicKey.publicKeyPem
+                  });
+                  Actor.createRemoteActor(newActor, function(error, act) {
+                    if (error) {
+                      console.log('already in database');
+                    } else {
+                      console.log(newActor);
+                    }
+                  });
+                  var keyId = "acct:" + actorWhoReceiveFollow.username + "@" + actorWhoReceiveFollow.host;
+
+                  var httpSignatureOptions = {
+                    algorithm: 'rsa-sha256',
+                    authorizationHeaderName: 'Signature',
+                    keyId,
+                    key: actorWhoReceiveFollow.privateKey
+                  };
+                  var acceptOptions = {
+                    url: newActor.inbox,
+                    json: true,
+                    method: 'POST',
+                    headers: {
+                      'Accept': 'application/activity+json'
+                    },
+                    body: signedAcceptObject,
+                    httpSignature: httpSignatureOptions
+                  };
+                  request(acceptOptions);
+                } else {
+                  console.log('error');
+                }
+              });
+            }
+          });
+
         });
+
+
+
+
+
+
+
+
+
       } else {
         console.log('Error actor does not exist');
       }
@@ -166,23 +217,25 @@ router.post('/', function(req, res) {
   if (activity.type === 'Accept') {
 
     var newFollowing = activity.actor;
+
     Follow.update({
-      actor: object.url,
+      actor: activity.object.actor,
       type: "Following"
     }, {
       $addToSet: {
         items: newFollowing
       }
     }, function(error, up) {
+
       if (error) {
         console.log("error");
       }
       if (!error) {
-        console.log('no error');
+        console.log("no error, Added to the actor's followings !");
       }
     });
 
-    console.log('ok');
+
   }
 
   if (activity.type === 'Undo') {

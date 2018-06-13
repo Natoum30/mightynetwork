@@ -5,6 +5,8 @@ var instance = process.env.INSTANCE;
 var db = mongoose.connect('mongodb://localhost:27017/' + instance);
 var Follow = require('./Follow');
 var pem = require('pem');
+var User = require('../User');
+
 pem.config({
   pathOpenSSL: '/usr/bin/openssl'
 });
@@ -59,7 +61,7 @@ var actorSchema = new Schema({
 
 actorSchema.methods.toJSON = function() {
   var obj = this.toObject();
-  delete obj._id;
+  //  delete obj._id;
   delete obj.__v;
   delete obj.user_id;
   delete obj.privateKey;
@@ -74,10 +76,9 @@ module.exports.createPublicAndPrivateKey = function(actor) {
 };
 
 
-module.exports.createActor = function(newActor, callback) {
+module.exports.createLocalActor = function(newActor, callback) {
   if (!newActor.created_at) newActor.created_at = new Date();
 
-  console.log('Generating a RSA key...');
   pem.createPrivateKey(function(error, response) {
     if (error) {
       console.log('privateKey error');
@@ -110,7 +111,11 @@ module.exports.createActor = function(newActor, callback) {
 
   });
 
+};
 
+module.exports.createRemoteActor = function(newActor, callback) {
+  if (!newActor.created_at) newActor.created_at = new Date();
+  newActor.save(callback);
 };
 
 module.exports.showActorActivityPubObject = function(actor, response) {

@@ -84,8 +84,10 @@ router.post('/register', function(request, response) {
           published: newUser.created_at
         });
 
-        Actor.createActor(newActor, function(error, actor) {
+        Actor.createLocalActor(newActor, function(error, actor) {
           if (error) {
+            console.log('There is an error !');
+            console.log(error.message);
             console.log(error);
             response.render('regiser', {
               title: 'Register - Error',
@@ -93,12 +95,12 @@ router.post('/register', function(request, response) {
             });
 
           } else {
-            console.log(actor);
+            //      console.log(actor);
 
             var newFollowers = new Follow({
               actor: actor.url,
               type: "Followers",
-              items: ["https://www.w3.org/ns/activitystreams#Public"]
+              items: []
             });
             var newFollowing = new Follow({
               actor: actor.url,
@@ -107,11 +109,11 @@ router.post('/register', function(request, response) {
             });
 
             Follow.createFollow(newFollowers, function(error, followers) {
-              console.log(followers);
+              //        console.log(followers);
             });
 
             Follow.createFollow(newFollowing, function(error, followers) {
-              console.log("nothing here");
+              //      console.log("nothing here");
             });
           }
         });
@@ -128,7 +130,7 @@ router.post('/register', function(request, response) {
       }
     });
 
-    console.log(newUser._id);
+    //  console.log(newUser._id);
   }
 });
 

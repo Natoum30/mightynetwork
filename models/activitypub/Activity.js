@@ -14,9 +14,9 @@ var activitySchema = new Schema({
   "@context": String,
   type: String, // Can be "follow", "accept", "create", "reject"...
   id: String,
-  to: [String],
   actor: String,
-  object: JSON || String
+  object: JSON || String,
+  signature: JSON
 });
 
 activitySchema.options.toJSON = {
@@ -51,6 +51,7 @@ module.exports.signObject = function(byActor, object) {
     creator: byActor.url,
     algorithm: 'RsaSignature2017'
   };
+  console.log(jsig.sign(object, options));
   return jsig.promises.sign(object, options);
 };
 

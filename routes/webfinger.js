@@ -7,9 +7,6 @@ var Note = require('../models/Note');
 var Actor = require('../models/activitypub/Actor');
 var http = require('request');
 
-
-
-
 var isWebfingerResourceValid = function(value) {
 
   var exists = function(value) {
@@ -27,7 +24,6 @@ var isWebfingerResourceValid = function(value) {
   console.log('ok');
   //  return sanitizeHost(host, REMOTE_SCHEME.HTTP) === CONFIG.WEBSERVER.HOST;
 };
-
 
 
 /* WebFinger*/
