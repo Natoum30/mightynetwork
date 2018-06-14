@@ -41,6 +41,7 @@ router.post('/', function(req, res) {
           attributedTo: receivedNote.attributedTo,
           published: activity.published,
           actor: activity.actor,
+          id: receivedNote.id,
           actorObject: senderActor
         });
         Note.createNote(newNote);

@@ -47,6 +47,7 @@ router.post('/', User.ensureAuthenticate, function(req, res) {
             actorObject: actorWhoSendNote.toJSON(),
             actor: actorWhoSendNote.url
           });
+          newNote.id = newNote.actor + '/note/' + newNote._id;
 
           Note.createNote(newNote, function(error, note) {
             if (error) {

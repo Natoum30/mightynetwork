@@ -20,7 +20,7 @@ block content
             small (#{note.actorObject.username}@#{note.actorObject.host})
           p= note.content 
           small
-            a(href='/users/account/'+ note.actorObject._id + '/note/' + note.id) clic
+            a(href= note.id) clic
           p.date=note.published
       else
         .jumbotron

@@ -38,7 +38,6 @@ var Note = module.exports = mongoose.model('Note', noteSchema);
 
 module.exports.createNote = function(newNote, callback) {
   if (!newNote.published) newNote.published = new Date();
-  newNote.id = newNote.actor + '/note/' + newNote._id;
   newNote.save(callback);
 };
 

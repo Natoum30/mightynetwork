@@ -289,7 +289,7 @@ router.get('/:username/note/:id', User.ensureAuthenticate, function(request, res
       actor: note.actorObject,
       content: note.content,
       published: note.published,
-      host: instance
+      instance: instance
 
     });
   });
