@@ -2,16 +2,21 @@ var express = require('express');
 var router = express.Router({
   mergeParams: true
 });
+
+// Models
 var Collection = require('../../models/activitypub/Collection');
 var Actor = require('../../models/activitypub/Actor');
 var Follow = require('../../models/activitypub/Follow');
 var Note = require('../../models/Note');
 var User = require('../../models/User');
 var Activity = require('../../models/activitypub/Activity');
+
+// Helpers
+var actorHelper = require('../../helpers/activitypub/actor');
+var signHelper = require('../../helpers/activitypub/signature');
+var followHelper = require('../../helpers/activitypub/follow');
+// Node_modules
 var request = require('request');
-var jsonld = require('jsonld');
-var jsig = require('jsonld-signatures');
-jsig.use('jsonld', jsonld);
 
 
 router.post('/', function(req, res) {
@@ -42,7 +47,7 @@ router.post('/', function(req, res) {
         Note.createNote(newNote);
         console.log(newNote);
       }
-      //if (!actor) {
+      //if (!senderActor  ) {
       //  var newActor = new Actor({
       //    username: senderActorObject.username,
       //    host: senderActorObject.host, // A changer
@@ -73,27 +78,13 @@ router.post('/', function(req, res) {
   }
 
   if (activity.type === 'Follow') {
-    Actor.findOne({
-      'url': activity.object
-    }, function(error, actorWhoReceiveFollow) {
+    actorHelper.getByUrl(activity.object, function(error, actorWhoReceiveFollow) {
+      console.log('héfollow');
+
       if (actorWhoReceiveFollow) {
 
         var newFollower = activity.actor;
-        Follow.update({
-          actor: actorWhoReceiveFollow.url,
-          type: "Followers"
-        }, {
-          $addToSet: {
-            items: newFollower
-          }
-        }, function(error, up) {
-          if (error) {
-            console.log("error");
-          }
-          if (!error) {
-            console.log('no error');
-          }
-        });
+        followHelper.addFollowers(newFollower, actorWhoReceiveFollow);
 
         var acceptObject = {
           "@context": [
@@ -109,12 +100,7 @@ router.post('/', function(req, res) {
           object: activity
         };
 
-        jsig.sign(acceptObject, {
-          privateKeyPem: actorWhoReceiveFollow.privateKey,
-          creator: actorWhoReceiveFollow.url,
-          algorithm: 'RsaSignature2017'
-
-        }, function(err, signedAcceptObject) {
+        signHelper.signObject(actorWhoReceiveFollow, acceptObject, function(err, signedAcceptObject) {
           if (err) {
             return console.log('Signing error:', err);
           }
@@ -126,13 +112,12 @@ router.post('/', function(req, res) {
             keyId,
             key: actorWhoReceiveFollow.privateKey
           };
-          Actor.findOne({
-            'url': activity.actor
-          }, function(error, acceptRecipient) {
+
+
+          actorHelper.getByUrl(activity.actor, function(error, acceptRecipient) {
             if (acceptRecipient) {
 
               console.log(acceptObject);
-
 
               var acceptOptions = {
                 url: acceptRecipient.inbox,
@@ -141,18 +126,12 @@ router.post('/', function(req, res) {
                 body: signedAcceptObject,
                 httpSignature: httpSignatureOptions
               };
-
               request(acceptOptions);
             }
+
             if (!acceptRecipient) {
-              var actorOptions = {
-                url: activity.actor,
-                headers: {
-                  'Accept': 'application/activity+json'
-                },
-                json: true
-              };
-              request.get(actorOptions, function(error, res, actor) {
+
+              actorHelper.getRemoteActor(activity.actor, function(error, res, actor) {
                 if (!error && res.statusCode === 200) {
                   var strUrl = actor.url;
                   var splitStrUrl = strUrl.split('/');
@@ -196,48 +175,31 @@ router.post('/', function(req, res) {
 
         });
 
-
-
-
-
-
-
-
-
       } else {
         console.log('Error actor does not exist');
       }
     });
-    //Follow.addFollower();
 
   }
+
+
+  // If I receive a "Accept" activity
 
   if (activity.type === 'Accept') {
 
     var newFollowing = activity.actor;
+    var actorFollowing = activity.object.actor;
 
-    Follow.update({
-      actor: activity.object.actor,
-      type: "Following"
-    }, {
-      $addToSet: {
-        items: newFollowing
-      }
-    }, function(error, up) {
-
-      if (error) {
-        console.log("error");
-      }
-      if (!error) {
-        console.log("no error, Added to the actor's followings !");
-      }
-    });
-
+    followHelper.addFollowing(newFollowing, actorFollowing);
 
   }
 
   if (activity.type === 'Undo') {
-    console.log('Undo');
+    console.log('héundo');
+    var actorToUnfollow = activity.object.object;
+    var unFollower = activity.actor;
+
+    followHelper.unFollow(actorToUnfollow, unFollower);
   }
 
 });

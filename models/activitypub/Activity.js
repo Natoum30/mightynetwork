@@ -45,45 +45,7 @@ module.exports.createActivity = function(newActivity, callback) {
   newActivity.save(callback);
 };
 
-module.exports.signObject = function(byActor, object) {
-  var options = {
-    privateKeyPem: byActor.privateKey,
-    creator: byActor.url,
-    algorithm: 'RsaSignature2017'
-  };
-  console.log(jsig.sign(object, options));
-  return jsig.promises.sign(object, options);
-};
 
-module.exports.isSignatureVerified = function(fromActor, signedObject) {
-  var publicKeyObject = {
-    '@context': jsig.SECURITY_CONTEXT_URL,
-    '@id': fromActor.url,
-    '@type': 'CryptographicKey',
-    owner: fromActor.url,
-    publicKeyPem: fromActor.publicKey
-  };
-
-  var publicKeyOwnerObject = {
-    '@context': jsig.SECURITY_CONTEXT_URL,
-    '@id': fromActor.url,
-    publicKey: signedObject.publicKey
-  };
-
-  var options = {
-    publicKey: publicKeyObject,
-    publicKeyOwner: publicKeyOwnerObject
-  };
-
-  return jsig.promises.verify(signedDocument, options)
-    .catch(err => {
-      logger.error('Cannot check signature.', {
-        err
-      })
-      return false
-    })
-
-};
 //
 //module.exports.postActivity = function(message,callback){
 //  var destInbox = 'http://localhost:3000/users/nath/inbox';

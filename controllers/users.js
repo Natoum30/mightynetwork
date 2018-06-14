@@ -8,7 +8,7 @@ var Actor = require('../models/activitypub/Actor');
 var http = require('request');
 var Actor = require('../models/activitypub/Actor');
 var instance = process.env.INSTANCE;
-
+var actorHelper = require('../helpers/activitypub/actor');
 
 /* Search bar - Members routes */
 router.post('/', function(request, response, next) {
@@ -195,11 +195,11 @@ router.get('/:username', function(request, response, next) {
         },
 
         'application/activity+json': function() {
-          Actor.showActorActivityPubObject(actor, response);
+          actorHelper.showActorActivityPubObject(actor, response);
         },
 
         'application/ld+json': function() {
-          Actor.showActorActivityPubObject(actor, response);
+          actorHelper.showActorActivityPubObject(actor, response);
         }
 
       });

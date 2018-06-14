@@ -6,6 +6,7 @@ var db = mongoose.connect('mongodb://localhost:27017/' + instance);
 var Follow = require('./Follow');
 var pem = require('pem');
 var User = require('../User');
+var request = require('request');
 
 pem.config({
   pathOpenSSL: '/usr/bin/openssl'
@@ -116,40 +117,4 @@ module.exports.createLocalActor = function(newActor, callback) {
 module.exports.createRemoteActor = function(newActor, callback) {
   if (!newActor.created_at) newActor.created_at = new Date();
   newActor.save(callback);
-};
-
-module.exports.showActorActivityPubObject = function(actor, response) {
-  var actorActivityPubObject = {
-    "@context": [
-      "https://www.w3.org/ns/activitystreams",
-      "https://w3id.org/security/v1"
-    ],
-    "id": actor.url,
-    "type": "Person",
-    "following": actor.following,
-    "followers": actor.followers,
-    "inbox": actor.inbox,
-    "outbox": actor.outbox,
-    "preferredUsername": actor.username,
-    "name": actor.username,
-    "summary": "No summary",
-    "url": actor.url,
-    "endpoints": {
-      "sharedInbox": actor.inbox
-    },
-    "publicKey": {
-      "owner": actor.url,
-      "id": actor.url + "#main-key",
-      "publicKeyPem": actor.publicKey
-    }
-  };
-  response.json(actorActivityPubObject);
-};
-
-module.exports.isSignatueVerified = function(actor, object) {
-
-};
-
-module.exports.signObject = function(actor, object) {
-
 };

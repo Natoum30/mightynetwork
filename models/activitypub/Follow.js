@@ -33,15 +33,3 @@ var Follow = module.exports = mongoose.model('Follow', followSchema);
 module.exports.createFollow = function(newFollow, callback) {
   newFollow.save(callback);
 };
-
-module.exports.showFollow = function() {
-
-};
-
-module.exports.addFollowers = function() {
-
-};
-
-module.exports.addFollowing = function() {
-
-};

@@ -8,6 +8,8 @@ var Actor = require('../models/activitypub/Actor');
 var Activity = require('../models/activitypub/Activity');
 var Follow = require('../models/activitypub/Follow');
 
+var actorHelper = require('../helpers/activitypub/actor');
+
 /* Index - Home page */
 var instance = process.env.INSTANCE;
 router.get('/', function(request, response, next) {
@@ -34,7 +36,10 @@ router.get('/', function(request, response, next) {
 /* Register routes */
 
 router.get('/register', function(request, response) {
-
+  var actorUrl = 'http://localhost:8000/users/star';
+  actorHelper.getByUrl(actorUrl, function(error, actor) {
+    console.log(actor);
+  });
   response.render('register', {
     title: 'Register',
     instance: instance

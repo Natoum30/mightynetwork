@@ -18,13 +18,13 @@ var mongoose = require('mongoose');
 var instance = process.env.INSTANCE;
 var db = mongoose.createConnection('mongodb://localhost:27017/' + instance);
 var bcrypt = require('bcryptjs');
-var indexRouter = require('./routes/index');
-var noteRouter = require('./routes/note');
-var usersRouter = require('./routes/users');
-var webfingerRouter = require('./routes/webfinger');
-var inboxRouter = require('./routes/activitypub/inbox');
-var outboxRouter = require('./routes/activitypub/outbox');
-var followRouter = require('./routes/activitypub/follow');
+var indexRouter = require('./controllers/index');
+var noteRouter = require('./controllers/note');
+var usersRouter = require('./controllers/users');
+var webfingerRouter = require('./controllers/webfinger');
+var inboxRouter = require('./controllers/activitypub/inbox');
+var outboxRouter = require('./controllers/activitypub/outbox');
+var followRouter = require('./controllers/activitypub/follow');
 var app = express();
 
 
