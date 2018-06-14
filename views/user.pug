@@ -4,7 +4,8 @@ block content
   .container
     p.lead
       !=messages()
-    h2 #{author}@#{host}
+    h2 
+      a(href=authorUrl) #{author}@#{host}
     if user
       form(action="/users/"+ author + "/follow?resource=" + author + '@' + host, method="POST")
         .form-group

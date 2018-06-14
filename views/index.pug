@@ -15,12 +15,12 @@ block content
       each note in notes
         .jumbotron
           p 
-            a(href= '/users/'+ note.actorObject.username)  #{note.actorObject.username}
+            a(href= '/users/account/'+ note.actorObject._id)  #{note.actorObject.username}
             span 
             small (#{note.actorObject.username}@#{note.actorObject.host})
           p= note.content 
           small
-            a(href='/users/'+ note.actorObject.username + '/note/' + note.id) clic
+            a(href='/users/account/'+ note.actorObject._id + '/note/' + note.id) clic
           p.date=note.published
       else
         .jumbotron

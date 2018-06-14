@@ -7,8 +7,13 @@ var Note = require('../models/Note');
 var Actor = require('../models/activitypub/Actor');
 var http = require('request');
 var Actor = require('../models/activitypub/Actor');
-var instance = process.env.INSTANCE;
+
+// Helpers
 var actorHelper = require('../helpers/activitypub/actor');
+var signHelper = require('../helpers/activitypub/signature');
+var followHelper = require('../helpers/activitypub/follow');
+
+var instance = process.env.INSTANCE;
 
 /* Search bar - Members routes */
 router.post('/', function(request, response, next) {
@@ -60,29 +65,39 @@ router.post('/', function(request, response, next) {
         http.get(actorOptions, function(error, res, actor) {
           if (!error && res.statusCode === 200) {
             if (userCalledHost === request.get('Host')) {
-              response.redirect('users/' + actor.preferredUsername);
-            } else {
-              console.log("Creating new actor...");
-              var newActor = new Actor({
-                username: actor.preferredUsername,
-                host: userCalledHost, // A changer
-                url: actor.url, // Webfinger
-                inbox: actor.inbox,
-                outbox: actor.outbox,
-                following: actor.following,
-                followers: actor.followers,
-                publicKey: actor.publicKey.publicKeyPem
-              });
-              console.log(newActor);
-
-              Actor.createRemoteActor(newActor, function(error, act) {
-                if (error) {
-                  console.log('already in database');
-                } else {
-                  console.log(newActor);
+              Actor.findOne({
+                username: userCalledUsername
+              }, function(error, localActor) {
+                if (localActor) {
+                  response.redirect('users/account/' + localActor._id);
                 }
               });
-              response.redirect('users/' + newActor.username);
+            } else {
+
+              actorHelper.getByUrl(actor.id, function(error, remoteActor) {
+                if (remoteActor) {
+                  response.redirect('users/account/' + remoteActor._id);
+                }
+                if (!remoteActor) {
+
+                  console.log("Creating new actor...");
+                  var newActor = new Actor({
+                    username: actor.preferredUsername,
+                    host: userCalledHost, // A changer
+                    url: actor.id, // Webfinger
+                    inbox: actor.inbox,
+                    outbox: actor.outbox,
+                    following: actor.following,
+                    followers: actor.followers,
+                    publicKey: actor.publicKey.publicKeyPem
+                  });
+
+                  Actor.createRemoteActor(newActor);
+                  response.redirect('users/account/' + newActor._id);
+
+                }
+              });
+
             }
           } else {
             console.log('error');
@@ -101,13 +116,6 @@ router.post('/', function(request, response, next) {
   });
 
 });
-
-
-
-
-
-
-
 
 
 router.get('/', function(request, response) {
@@ -147,17 +155,19 @@ router.get('/users.json', function(request, response) {
 
 
 /* My page route */
-
+// User page for local Users
 router.get('/:username', function(request, response, next) {
   var username = request.params.username;
+  var thisHost = request.get('Host');
 
   Actor.findOne({
-    'username': username
-  }, function(error, actor) {
+    'username': username,
+    'host': thisHost
+  }, function(error, localActor) {
     if (error) {
       console.log('error');
     }
-    if (!actor) {
+    if (!localActor) {
       response.format({
         'text/html': function() {
           response.render('error', {
@@ -175,7 +185,7 @@ router.get('/:username', function(request, response, next) {
         'text/html': function() {
           // Show outbox activities
           Note.find({
-              'actorObject': actor
+              'actorObject': localActor
             },
             null, {
               sort: {
@@ -185,21 +195,84 @@ router.get('/:username', function(request, response, next) {
 
             function(error, notes) {
               response.render('user', {
-                title: actor.username,
+                title: localActor.username,
                 notes: notes,
-                author: actor.username,
-                host: actor.host,
+                author: localActor.username,
+                host: localActor.host,
+                authorUrl: localActor.url,
                 instance: instance
               });
             });
         },
 
         'application/activity+json': function() {
-          actorHelper.showActorActivityPubObject(actor, response);
+          response.json({
+            'Error': 'This actor does not exist'
+          });
         },
 
         'application/ld+json': function() {
-          actorHelper.showActorActivityPubObject(actor, response);
+          response.json({
+            'Error': 'This actor does not exist'
+          });
+        }
+      });
+    }
+  });
+});
+
+router.get('/account/:id', function(request, response) {
+  var id = request.params.id;
+  Actor.findOne({
+    '_id': id,
+  }, function(error, remoteActor) {
+    if (error) {
+      console.log('error');
+    }
+    if (!remoteActor) {
+      response.format({
+        'text/html': function() {
+          response.render('error', {
+            message: 'actor not found',
+            status: '404',
+          });
+        },
+        'application/activity+json': function() {
+          response.send('');
+        }
+      });
+    } else {
+      response.format({
+
+        'text/html': function() {
+          // Show outbox activities
+          Note.find({
+              'actorObject': remoteActor
+            },
+            null, {
+              sort: {
+                published: -1
+              }
+            },
+
+            function(error, notes) {
+              response.render('user', {
+                title: remoteActor.username,
+                notes: notes,
+                author: remoteActor.username,
+                host: remoteActor.host,
+                authorUrl: remoteActor.url,
+                instance: instance
+              });
+            });
+        },
+
+        'application/activity+json': function() {
+          actorHelper.showActorActivityPubObject(localActor, response);
+        },
+
+        'application/ld+json': function() {
+          actorHelper.showActorActivityPubObject(localActor, response);
         }
 
       });
@@ -221,11 +294,6 @@ router.get('/:username/note/:id', User.ensureAuthenticate, function(request, res
     });
   });
 });
-
-
-
-
-
 
 /* User db routes */
 

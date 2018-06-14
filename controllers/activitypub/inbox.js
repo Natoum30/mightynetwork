@@ -28,9 +28,8 @@ router.post('/', function(req, res) {
   if (activity.type === 'Create') {
     var receivedNote = activity.object;
     Actor.findOne({
-      'inbox': activity.actor + '/inbox'
+      'url': activity.actor
     }, function(error, senderActor) {
-      console.log(senderActor);
 
       if (senderActor) {
 
@@ -139,7 +138,7 @@ router.post('/', function(req, res) {
                   var newActor = new Actor({
                     username: actor.preferredUsername,
                     host: actor.host || actorHost, // A changer
-                    url: actor.url, // Webfinger
+                    url: actor.id, // Webfinger
                     inbox: actor.inbox,
                     outbox: actor.outbox,
                     following: actor.following,
