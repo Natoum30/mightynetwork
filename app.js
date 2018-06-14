@@ -89,6 +89,7 @@ app.use('/', noteRouter);
 app.use('/users', usersRouter);
 app.use('/.well-known', webfingerRouter);
 app.use('/users/:username/outbox', outboxRouter);
+app.use('/inbox', inboxRouter);
 app.use('/users/:username/inbox', inboxRouter);
 app.use('/users/:username', followRouter);
 // catch 404 and forward to error handler

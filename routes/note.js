@@ -7,6 +7,10 @@ var User = require('../models/User');
 var Actor = require('../models/activitypub/Actor');
 var Activity = require('../models/activitypub/Activity');
 var Follow = require('../models/activitypub/Follow');
+var jsonld = require('jsonld');
+var jsig = require('jsonld-signatures');
+jsig.use('jsonld', jsonld);
+
 
 var request = require('request');
 
@@ -23,13 +27,13 @@ router.post('/', User.ensureAuthenticate, function(req, res) {
 
     Actor.findOne({
       'user_id': req.user._id
-    }, function(error, actor) {
+    }, function(error, actorWhoSendNote) {
       if (error) {
         ///
       } else {
 
         Follow.findOne({
-          'actor': actor.url,
+          'actor': actorWhoSendNote.url,
           'type': 'Followers'
         }, function(error, followers) {
           console.log(followers);
@@ -38,10 +42,10 @@ router.post('/', User.ensureAuthenticate, function(req, res) {
             type: 'Note',
             content: content,
             to: recipients,
-            attributedTo: actor.url,
+            attributedTo: actorWhoSendNote.url,
             published: Date,
-            actorObject: actor.toJSON(),
-            actor: actor.url
+            actorObject: actorWhoSendNote.toJSON(),
+            actor: actorWhoSendNote.url
           });
 
           Note.createNote(newNote, function(error, note) {
@@ -56,38 +60,54 @@ router.post('/', User.ensureAuthenticate, function(req, res) {
                 actor: note.actor
               });
 
+
+              var keyId = "acct:" + actorWhoSendNote.username + "@" + actorWhoSendNote.host;
+              var httpSignatureOptions = {
+                algorithm: 'rsa-sha256',
+                authorizationHeaderName: 'Signature',
+                keyId,
+                key: actorWhoSendNote.privateKey
+              };
+
               recipients.forEach(function(recipient) {
                 console.log(recipient);
                 if (recipient === "https://www.w3.org/ns/activitystreams#Public") {
-                  console.log("ok");
+                  console.log("Public");
                 } else {
 
                   Actor.findOne({
                     'url': recipient
-                  }, function(error, actor) {
+                  }, function(error, actorRecipient) {
+                    jsig.sign(newActivity, {
+                      privateKeyPem: actorWhoSendNote.privateKey,
+                      creator: actorWhoSendNote.url,
+                      algorithm: 'RsaSignature2017'
 
-                    Activity.signObject(actor, newActivity);
+                    }, function(err, signedNewActivity) {
+                      if (err) {
+                        console.log('Signing error', error);
+                      }
+                      console.log('Signed object:', signedNewActivity);
+                      var activityOptions = {
+                        url: 'http://localhost:3000/inbox',
+                        json: true,
+                        method: 'POST',
+                        body: signedNewActivity,
+                        httpSignature: httpSignatureOptions
+                      };
 
-                    var activityOptions = {
-                      url: actor.inbox,
-                      json: true,
-                      method: 'POST',
-                      body: newActivity
-                    };
-                    console.log(activityOptions.url);
-                    console.log(newNote.actorObject.inbox);
+                      if (activityOptions.url != newNote.actorObject.inbox) {
+                        request(activityOptions, function(error, response, next) {
+                          if (error) {
+                            req.flash('alert', 'An error occured !');
+                          } else {
+                            console.log('coucou');
 
-                    if (activityOptions.url != newNote.actorObject.inbox) {
-                      request(activityOptions, function(error, response, next) {
-                        if (error) {
-                          req.flash('alert-success', 'An error occured !');
-                        } else {
-                          console.log('coucou');
+                          }
 
-                        }
-
-                      });
-                    }
+                        });
+                      }
+                    });
                   });
                 }
               });

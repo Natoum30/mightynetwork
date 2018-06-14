@@ -18,52 +18,56 @@ router.post('/', function(req, res) {
   var username = req.params.username;
   var activity = req.body;
   console.log(activity);
+
+
   if (activity.type === 'Create') {
     var receivedNote = activity.object;
-    var senderActorObject = receivedNote.actorObject;
-
     Actor.findOne({
-      'url': receivedNote.actor
-    }, function(error, actor) {
-      if (actor) {
+      'inbox': activity.actor + '/inbox'
+    }, function(error, senderActor) {
+      console.log(senderActor);
+
+      if (senderActor) {
+
         var newNote = new Note({
           type: 'Note',
           content: receivedNote.content,
           to: receivedNote.to,
+          cc: receivedNote.cc,
           attributedTo: receivedNote.attributedTo,
-          published: receivedNote.published,
-          actorObject: actor,
-          actor: receivedNote.actor
+          published: activity.published,
+          actor: activity.actor,
+          actorObject: senderActor
         });
         Note.createNote(newNote);
         console.log(newNote);
       }
-      if (!actor) {
-        var newActor = new Actor({
-          username: senderActorObject.username,
-          host: senderActorObject.host, // A changer
-          url: senderActorObject.url, // Webfinger
-          inbox: senderActorObject.inbox,
-          outbox: senderActorObject.outbox,
-          following: senderActorObject.following,
-          followers: senderActorObject.followers,
-          publicKey: senderActorObject.publicKey.publicKeyPem
-        });
+      //if (!actor) {
+      //  var newActor = new Actor({
+      //    username: senderActorObject.username,
+      //    host: senderActorObject.host, // A changer
+      //    url: senderActorObject.url, // Webfinger
+      //    inbox: senderActorObject.inbox,
+      //    outbox: senderActorObject.outbox,
+      //    following: senderActorObject.following,
+      //    followers: senderActorObject.followers,
+      //    publicKey: senderActorObject.publicKey.publicKeyPem
+      //  });
 
-        Actor.createRemoteActor(newActor, function(error, act) {
-          var newNote = new Note({
-            type: 'Note',
-            content: receivedNote.content,
-            to: receivedNote.to,
-            attributedTo: receivedNote.attributedTo,
-            published: receivedNote.published,
-            actorObject: newActor,
-            actor: receivedNote.actor
-          });
-          Note.createNote(newNote);
-          console.log(newNote);
-        });
-      }
+      //  Actor.createRemoteActor(newActor, function(error, act) {
+      //    var newNote = new Note({
+      //      type: 'Note',
+      //      content: receivedNote.content,
+      //      to: receivedNote.to,
+      //      attributedTo: receivedNote.attributedTo,
+      //      published: receivedNote.published,
+      //      actorObject: newActor,
+      //      actor: receivedNote.actor
+      //    });
+      //    Note.createNote(newNote);
+      //    console.log(newNote);
+      //  });
+      //}
     });
 
   }
@@ -115,7 +119,13 @@ router.post('/', function(req, res) {
             return console.log('Signing error:', err);
           }
           console.log('Signed document:', signedAcceptObject);
-
+          var keyId = "acct:" + actorWhoReceiveFollow.username + "@" + actorWhoReceiveFollow.host;
+          var httpSignatureOptions = {
+            algorithm: 'rsa-sha256',
+            authorizationHeaderName: 'Signature',
+            keyId,
+            key: actorWhoReceiveFollow.privateKey
+          };
           Actor.findOne({
             'url': activity.actor
           }, function(error, acceptRecipient) {
@@ -123,12 +133,6 @@ router.post('/', function(req, res) {
 
               console.log(acceptObject);
 
-              var httpSignatureOptions = {
-                algorithm: 'rsa-sha256',
-                authorizationHeaderName: 'Signature',
-                keyId,
-                key: actorWhoReceiveFollow.privateKey
-              };
 
               var acceptOptions = {
                 url: acceptRecipient.inbox,
@@ -170,14 +174,8 @@ router.post('/', function(req, res) {
                       console.log(newActor);
                     }
                   });
-                  var keyId = "acct:" + actorWhoReceiveFollow.username + "@" + actorWhoReceiveFollow.host;
 
-                  var httpSignatureOptions = {
-                    algorithm: 'rsa-sha256',
-                    authorizationHeaderName: 'Signature',
-                    keyId,
-                    key: actorWhoReceiveFollow.privateKey
-                  };
+
                   var acceptOptions = {
                     url: newActor.inbox,
                     json: true,

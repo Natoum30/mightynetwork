@@ -135,7 +135,7 @@ module.exports.showActorActivityPubObject = function(actor, response) {
     "summary": "No summary",
     "url": actor.url,
     "endpoints": {
-      "sharedInbox": "http://" + actor.host + "/inbox"
+      "sharedInbox": actor.inbox
     },
     "publicKey": {
       "owner": actor.url,
