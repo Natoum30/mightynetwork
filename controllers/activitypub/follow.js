@@ -117,7 +117,7 @@ router.post('/follow', function(req, res) {
             RsaSignature2017: 'https://w3id.org/security#RsaSignature2017'
           }
         ],
-        id: sender.url + "/follows/" + recipient._id + "1",
+        id: sender.url + "/follows/" + recipient._id,
         type: "Follow",
         summary: '',
         actor: sender.url,
@@ -167,6 +167,94 @@ router.post('/follow', function(req, res) {
 
 
       req.flash('alert-success', 'Request sent');
+      res.location('/users/account/' + recipient._id);
+      res.redirect('/users/account/' + recipient._id);
+    });
+
+  });
+
+});
+
+
+router.post('/unfollow', function(req, res) {
+  var actorWithHost = req.query.resource;
+  var actorParts = actorWithHost.split('@');
+  var name = actorParts[0];
+  var host = actorParts[1];
+
+  Actor.findOne({
+    'username': name,
+    'host': host
+  }, function(error, recipient) {
+    Actor.findOne({
+      'username': req.user.username,
+      'host': req.get('Host')
+    }, function(error, sender) {
+      var followObject = {
+        id: sender.url + "/follows/" + recipient._id,
+        type: "Follow",
+        summary: '',
+        actor: sender.url,
+        object: recipient.url,
+
+      };
+
+      var unfollowObject = {
+        "@context": [
+          "https://www.w3.org/ns/activitystreams",
+          'https://w3id.org/security/v1',
+          {
+            RsaSignature2017: 'https://w3id.org/security#RsaSignature2017'
+          }
+        ],
+        id: sender.url + "/unfollow/" + recipient._id,
+        type: "Undo",
+        summary: '',
+        actor: sender.url,
+        object: followObject,
+
+      };
+
+
+      jsig.sign(unfollowObject, {
+        privateKeyPem: sender.privateKey,
+        creator: sender.url,
+        algorithm: 'RsaSignature2017'
+
+      }, function(err, signedUnfollowObject) {
+        if (err) {
+          return console.log('Signing error:', err);
+        }
+
+        console.log('Signed document:', signedUnfollowObject);
+
+        var keyId = "acct:" + sender.username + "@" + sender.host;
+        console.log(keyId);
+        var httpSignatureOptions = {
+          algorithm: 'rsa-sha256',
+          authorizationHeaderName: 'Signature',
+          keyId,
+          key: sender.privateKey
+        };
+
+        var unfollowOptions = {
+          url: recipient.inbox,
+          json: true,
+          method: 'POST',
+          headers: {
+            'Accept': 'application/activity+json'
+          },
+          httpSignature: httpSignatureOptions,
+          body: signedUnfollowObject
+        };
+
+        request(unfollowOptions);
+        console.log(res.body);
+
+      });
+
+
+      req.flash('alert-success', 'Unfollow sent');
       res.location('/users/account/' + recipient._id);
       res.redirect('/users/account/' + recipient._id);
     });

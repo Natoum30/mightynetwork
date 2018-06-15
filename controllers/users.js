@@ -158,64 +158,75 @@ router.get('/users.json', function(request, response) {
 // User page for local Users
 router.get('/:username', function(request, response, next) {
   var username = request.params.username;
-  var thisHost = request.get('Host');
-
-  Actor.findOne({
-    'username': username,
-    'host': thisHost
-  }, function(error, localActor) {
-    if (error) {
-      console.log('error');
-    }
-    if (!localActor) {
+  User.findOne({
+    'username': username
+  }, function(error, localUser) {
+    if (!localUser) {
       response.format({
         'text/html': function() {
           response.render('error', {
-            message: 'actor not found',
+            message: 'Not a local user',
             status: '404',
           });
         },
+
         'application/activity+json': function() {
-          response.send('');
+          response.send({
+            'error': 'Not a local user'
+          });
         }
       });
     } else {
-      response.format({
+      Actor.findOne({
+        'username': localUser.username,
+      }, function(error, localActor) {
+        if (error) {
+          console.log('error');
+        }
+        if (localActor) {
+          response.format({
 
-        'text/html': function() {
-          // Show outbox activities
-          Note.find({
-              'attributedTo': localActor.url
+            'text/html': function() {
+              // Show outbox activities
+              Note.find({
+                  'attributedTo': localActor.url
+                },
+                null, {
+                  sort: {
+                    published: -1
+                  }
+                },
+
+                function(error, notes) {
+                  response.render('user', {
+                    title: localActor.username,
+                    notes: notes,
+                    author: localActor.username,
+                    host: localActor.host,
+                    authorUrl: localActor.url,
+                    instance: instance
+                  });
+                });
+
             },
-            null, {
-              sort: {
-                published: -1
-              }
+
+            'application/activity+json': function() {
+
+              actorHelper.showActorActivityPubObject(localActor, response);
+
             },
 
-            function(error, notes) {
-              response.render('user', {
-                title: localActor.username,
-                notes: notes,
-                author: localActor.username,
-                host: localActor.host,
-                authorUrl: localActor.url,
-                instance: instance
-              });
-            });
-        },
+            'application/ld+json': function() {
+              console.log("hého");
 
-        'application/activity+json': function() {
-          actorHelper.showActorActivityPubObject(localActor, response);
+              actorHelper.showActorActivityPubObject(localActor, response);
 
-        },
-
-        'application/ld+json': function() {
-          actorHelper.showActorActivityPubObject(localActor, response);
-
+            }
+          });
         }
       });
     }
+
   });
 });
 

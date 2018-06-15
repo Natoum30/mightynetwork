@@ -17,7 +17,7 @@ var signHelper = require('../../helpers/activitypub/signature');
 var followHelper = require('../../helpers/activitypub/follow');
 // Node_modules
 var request = require('request');
-
+var striptags = require('striptags');
 
 router.post('/', function(req, res) {
   var username = req.params.username;
@@ -27,6 +27,7 @@ router.post('/', function(req, res) {
 
   if (activity.type === 'Create') {
     var receivedNote = activity.object;
+
     Actor.findOne({
       'url': activity.actor
     }, function(error, senderActor) {
@@ -35,7 +36,7 @@ router.post('/', function(req, res) {
 
         var newNote = new Note({
           type: 'Note',
-          content: receivedNote.content,
+          content: striptags(receivedNote.content),
           to: receivedNote.to,
           cc: receivedNote.cc,
           attributedTo: receivedNote.attributedTo,
@@ -190,7 +191,7 @@ router.post('/', function(req, res) {
   // If I receive a "Accept" activity
 
   if (activity.type === 'Accept') {
-
+    console.log("HHEO")
     var newFollowing = activity.actor;
     var actorFollowing = activity.object.actor;
 

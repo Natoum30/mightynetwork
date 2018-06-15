@@ -10,6 +10,9 @@ block content
       form(action="/users/"+ author + "/follow?resource=" + author + '@' + host, method="POST")
         .form-group
           button(type="submit",placeholder="follow",name="follow") Follow
+      form(action="/users/"+ author + "/unfollow?resource=" + author + '@' + host, method="POST")
+        .form-group
+          button(type="submit",placeholder="unfollow",name="unfollow") Unfollow
     each note in notes
       .jumbotron
         p 
