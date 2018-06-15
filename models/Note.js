@@ -3,7 +3,10 @@ var Schema = mongoose.Schema;
 var instance = process.env.INSTANCE;
 var db = mongoose.connect('mongodb://localhost:27017/' + instance);
 var noteSchema = new Schema({
-  id: String,
+  id: {
+    type: String,
+    unique: true
+  },
   actor: String,
   type: {
     type: String,
@@ -14,6 +17,10 @@ var noteSchema = new Schema({
     required: true
   },
   to: {
+    type: [String],
+    required: true
+  },
+  cc: {
     type: [String],
     required: true
   },

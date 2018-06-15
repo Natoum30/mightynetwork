@@ -24,12 +24,22 @@ router.get('/followers', function(req, res) {
       User.findOne({
         'username': username
       }, function(error, user) {
-        Actor.findOne({
-          'user_id': user._id
-        }, function(error, actor) {
-          var followers = Collection.makeCollection(Type, 'followers', res, actor.url);
-        });
+        if (!user) {
+          console.log("error");
+          var err = {
+            error: 'No user found'
+          };
+          res.json(err);
+        }
+        if (user) {
+          Actor.findOne({
+            'user_id': user._id
+          }, function(error, actor) {
+            Collection.makeCollection(Type, 'followers', res, actor.url);
+          });
+        }
       });
+
     },
 
     'application/ld+json': function() {
@@ -39,7 +49,7 @@ router.get('/followers', function(req, res) {
         Actor.findOne({
           'user_id': user._id
         }, function(error, actor) {
-          var followers = Collection.makeCollection(Type, 'followers', res, actor.url);
+          Collection.makeCollection(Type, 'followers', res, actor.url);
         });
       });
 
@@ -107,7 +117,7 @@ router.post('/follow', function(req, res) {
             RsaSignature2017: 'https://w3id.org/security#RsaSignature2017'
           }
         ],
-        id: sender.url + "/follows/" + recipient._id,
+        id: sender.url + "/follows/" + recipient._id + "1",
         type: "Follow",
         summary: '',
         actor: sender.url,
@@ -157,8 +167,8 @@ router.post('/follow', function(req, res) {
 
 
       req.flash('alert-success', 'Request sent');
-      res.location('/users/' + recipient.username);
-      res.redirect('/users/' + recipient.username);
+      res.location('/users/account/' + recipient._id);
+      res.redirect('/users/account/' + recipient._id);
     });
 
   });

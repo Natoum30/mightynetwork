@@ -185,7 +185,7 @@ router.get('/:username', function(request, response, next) {
         'text/html': function() {
           // Show outbox activities
           Note.find({
-              'actorObject': localActor
+              'attributedTo': localActor.url
             },
             null, {
               sort: {
@@ -206,15 +206,13 @@ router.get('/:username', function(request, response, next) {
         },
 
         'application/activity+json': function() {
-          response.json({
-            'Error': 'This actor does not exist'
-          });
+          actorHelper.showActorActivityPubObject(localActor, response);
+
         },
 
         'application/ld+json': function() {
-          response.json({
-            'Error': 'This actor does not exist'
-          });
+          actorHelper.showActorActivityPubObject(localActor, response);
+
         }
       });
     }
@@ -247,7 +245,7 @@ router.get('/account/:id', function(request, response) {
         'text/html': function() {
           // Show outbox activities
           Note.find({
-              'actorObject': remoteActor
+              'attributedTo': remoteActor.url
             },
             null, {
               sort: {
@@ -268,11 +266,15 @@ router.get('/account/:id', function(request, response) {
         },
 
         'application/activity+json': function() {
-          actorHelper.showActorActivityPubObject(localActor, response);
+          response.json({
+            'Error': 'This actor does not exist'
+          });
         },
 
         'application/ld+json': function() {
-          actorHelper.showActorActivityPubObject(localActor, response);
+          response.json({
+            'Error': 'This actor does not exist'
+          });
         }
 
       });

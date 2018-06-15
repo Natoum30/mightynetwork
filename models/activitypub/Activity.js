@@ -16,7 +16,8 @@ var activitySchema = new Schema({
   id: String,
   actor: String,
   object: JSON || String,
-  signature: JSON
+  signature: JSON,
+  published: Date
 });
 
 activitySchema.options.toJSON = {
@@ -41,6 +42,7 @@ activitySchema.methods.toJSON = function() {
 var Activity = module.exports = mongoose.model('Activity', activitySchema);
 
 module.exports.createActivity = function(newActivity, callback) {
+  if (!newNote.published) newNote.published = new Date();
   newActivity.id = newActivity.actor + '/note/' + newActivity._id;
   newActivity.save(callback);
 };

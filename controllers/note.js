@@ -41,27 +41,34 @@ router.post('/', User.ensureAuthenticate, function(req, res) {
           var newNote = new Note({
             type: 'Note',
             content: content,
-            to: recipients,
+            cc: actorWhoSendNote.followers,
+            to: ['https://www.w3.org/ns/activitystreams#Public'],
             attributedTo: actorWhoSendNote.url,
-            published: Date,
             actorObject: actorWhoSendNote.toJSON(),
-            actor: actorWhoSendNote.url
+            actor: actorWhoSendNote.url,
+
+
           });
           newNote.id = newNote.actor + '/note/' + newNote._id;
+          newNote.published = new Date();
 
           Note.createNote(newNote, function(error, note) {
             if (error) {
               res.send('error');
             } else {
+              console.log("NOTE:", note.toJSON());
+
               var newActivity = new Activity({
                 "@context": "https://www.w3.org/ns/activitystreams",
+                id: note.id + '/activity',
                 type: "Create",
-                to: note.to,
-                object: note,
-                actor: note.actor
+                cc: actorWhoSendNote.followers,
+                to: ['https://www.w3.org/ns/activitystreams#Public'],
+                object: note.toJSON(),
+                actor: note.actor,
+                published: note.published
               });
-
-
+              console.log("ACTIVITY : ", newActivity);
               var keyId = "acct:" + actorWhoSendNote.username + "@" + actorWhoSendNote.host;
               var httpSignatureOptions = {
                 algorithm: 'rsa-sha256',
@@ -75,39 +82,40 @@ router.post('/', User.ensureAuthenticate, function(req, res) {
                 if (recipient === "https://www.w3.org/ns/activitystreams#Public") {
                   console.log("Public");
                 } else {
-
                   Actor.findOne({
                     'url': recipient
                   }, function(error, actorRecipient) {
-                    jsig.sign(newActivity, {
+                    console.log(actorRecipient);
+                    var options = {
                       privateKeyPem: actorWhoSendNote.privateKey,
                       creator: actorWhoSendNote.url,
                       algorithm: 'RsaSignature2017'
-
-                    }, function(err, signedNewActivity) {
+                    };
+                    jsig.sign(newActivity.toJSON(), options, function(err, signedNewActivity) {
+                      signedNewActivity.published = newActivity.published;
+                      signedNewActivity.object.published = newActivity.object.published;
                       if (err) {
-                        console.log('Signing error', error);
+                        console.log('Signing error', err);
                       }
                       console.log('Signed object:', signedNewActivity);
                       var activityOptions = {
-                        url: 'http://localhost:3000/inbox',
+                        url: actorRecipient.inbox,
                         json: true,
                         method: 'POST',
                         body: signedNewActivity,
                         httpSignature: httpSignatureOptions
                       };
+                      //if (activityOptions.url != newNote.actorObject.inbox) {
+                      request(activityOptions, function(error, response, next) {
+                        if (error) {
+                          req.flash('alert', 'An error occured !');
+                        } else {
+                          console.log('coucou');
 
-                      if (activityOptions.url != newNote.actorObject.inbox) {
-                        request(activityOptions, function(error, response, next) {
-                          if (error) {
-                            req.flash('alert', 'An error occured !');
-                          } else {
-                            console.log('coucou');
+                        }
 
-                          }
-
-                        });
-                      }
+                      });
+                      //}
                     });
                   });
                 }

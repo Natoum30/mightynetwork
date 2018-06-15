@@ -44,7 +44,11 @@ router.post('/', function(req, res) {
           id: receivedNote.id,
           actorObject: senderActor
         });
-        Note.createNote(newNote);
+        Note.createNote(newNote, function(error, note) {
+          if (error) {
+            console.log("note already in DB");
+          }
+        });
         console.log(newNote);
       }
       //if (!senderActor  ) {

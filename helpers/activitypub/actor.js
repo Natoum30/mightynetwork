@@ -6,7 +6,10 @@ module.exports.showActorActivityPubObject = function(actor, response) {
   var actorActivityPubObject = {
     "@context": [
       "https://www.w3.org/ns/activitystreams",
-      "https://w3id.org/security/v1"
+      "https://w3id.org/security/v1",
+      {
+        RsaSignature2017: 'https://w3id.org/security#RsaSignature2017'
+      }
     ],
     "id": actor.url,
     "type": "Person",
