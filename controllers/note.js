@@ -1,24 +1,32 @@
+// Node modules
 var express = require('express');
 var router = express.Router();
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
+var jsonld = require('jsonld');
+var jsig = require('jsonld-signatures');
+jsig.use('jsonld', jsonld);
+var request = require('request');
+
+// Models
 var Note = require('../models/Note');
 var User = require('../models/User');
 var Actor = require('../models/activitypub/Actor');
 var Activity = require('../models/activitypub/Activity');
 var Follow = require('../models/activitypub/Follow');
-var jsonld = require('jsonld');
-var jsig = require('jsonld-signatures');
-jsig.use('jsonld', jsonld);
 
+// Helpers
+var actorHelper = require('../helpers/activitypub/actor');
+var signHelper = require('../helpers/activitypub/signature');
 
-var request = require('request');
 
 /* Post a Note */
 router.post('/', User.ensureAuthenticate, function(req, res) {
   var content = req.body.content;
   req.checkBody('content').notEmpty();
+
   var errors = req.validationErrors();
+
   if (errors) {
     req.flash('error', 'You seem to have nothing to share ? Too bad !');
     res.location('/');
@@ -36,8 +44,9 @@ router.post('/', User.ensureAuthenticate, function(req, res) {
           'actor': actorWhoSendNote.url,
           'type': 'Followers'
         }, function(error, followers) {
-          console.log(followers);
+
           var recipients = followers.items;
+
           var newNote = new Note({
             type: 'Note',
             content: content,
@@ -49,14 +58,16 @@ router.post('/', User.ensureAuthenticate, function(req, res) {
 
 
           });
+
           newNote.id = newNote.actor + '/note/' + newNote._id;
+
           newNote.published = new Date();
 
           Note.createNote(newNote, function(error, note) {
+
             if (error) {
-              res.send('error');
+              throw "Erreur";
             } else {
-              console.log("NOTE:", note.toJSON());
 
               var newActivity = new Activity({
                 "@context": "https://www.w3.org/ns/activitystreams",
@@ -68,6 +79,7 @@ router.post('/', User.ensureAuthenticate, function(req, res) {
                 actor: note.actor,
                 published: note.published
               });
+
               console.log("ACTIVITY : ", newActivity);
               var keyId = "acct:" + actorWhoSendNote.username + "@" + actorWhoSendNote.host;
               var httpSignatureOptions = {
@@ -78,24 +90,17 @@ router.post('/', User.ensureAuthenticate, function(req, res) {
               };
 
               recipients.forEach(function(recipient) {
-                console.log(recipient);
                 if (recipient === "https://www.w3.org/ns/activitystreams#Public") {
                   console.log("Public");
                 } else {
-                  Actor.findOne({
-                    'url': recipient
-                  }, function(error, actorRecipient) {
-                    console.log(actorRecipient);
-                    var options = {
-                      privateKeyPem: actorWhoSendNote.privateKey,
-                      creator: actorWhoSendNote.url,
-                      algorithm: 'RsaSignature2017'
-                    };
-                    jsig.sign(newActivity.toJSON(), options, function(err, signedNewActivity) {
+                  actorHelper.getByUrl(recipient, function(error, actorRecipient) {
+
+
+                    signHelper.signObject(actorWhoSendNote, newActivity.toJSON(), function(err, signedNewActivity) {
                       signedNewActivity.published = newActivity.published;
                       signedNewActivity.object.published = newActivity.object.published;
                       if (err) {
-                        console.log('Signing error', err);
+                        throw err;
                       }
                       console.log('Signed object:', signedNewActivity);
                       var activityOptions = {

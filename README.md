@@ -4,6 +4,7 @@ Simple app test implementing ActivityPub in NodeJS
 ### Dependencies
 
 npm : NodeJS package manager
+
 MongoDB
 
 ### Installation guide

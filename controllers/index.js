@@ -1,17 +1,24 @@
+// Node modules
 var express = require('express');
 var router = express.Router();
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
+
+// Models
 var Note = require('../models/Note');
 var User = require('../models/User');
 var Actor = require('../models/activitypub/Actor');
 var Activity = require('../models/activitypub/Activity');
 var Follow = require('../models/activitypub/Follow');
 
+
+// Helpers
 var actorHelper = require('../helpers/activitypub/actor');
 
-/* Index - Home page */
 var instance = process.env.INSTANCE;
+
+
+/* Index - Home page */
 router.get('/', function(request, response, next) {
   if (request.isAuthenticated()) {
     Note.find({}, null, {

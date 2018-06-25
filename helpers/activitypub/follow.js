@@ -1,4 +1,6 @@
 var Follow = require('../../models/activitypub/Follow');
+var collecHelper = require('./collection');
+
 
 module.exports.addFollowers = function(newFollower, actorWhoReceiveFollow) {
   Follow.update({

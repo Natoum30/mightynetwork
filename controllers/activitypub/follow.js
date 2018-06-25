@@ -2,15 +2,20 @@ var express = require('express');
 var router = express.Router({
   mergeParams: true
 });
+var jsonld = require('jsonld');
+var jsig = require('jsonld-signatures');
+jsig.use('jsonld', jsonld);
+
+// Models
 var Collection = require('../../models/activitypub/Collection');
 var Actor = require('../../models/activitypub/Actor');
 var User = require('../../models/User');
 var Follow = require('../../models/activitypub/Follow');
 var request = require('request');
 var Activity = require('../../models/activitypub/Activity');
-var jsonld = require('jsonld');
-var jsig = require('jsonld-signatures');
-jsig.use('jsonld', jsonld);
+
+// Helpers
+var collecHelper = require('../../helpers/activitypub/collection');
 
 
 router.get('/followers', function(req, res) {
@@ -35,7 +40,7 @@ router.get('/followers', function(req, res) {
           Actor.findOne({
             'user_id': user._id
           }, function(error, actor) {
-            Collection.makeCollection(Type, 'followers', res, actor.url);
+            collecHelper.makeCollection(Type, 'followers', res, actor.url);
           });
         }
       });
@@ -49,7 +54,7 @@ router.get('/followers', function(req, res) {
         Actor.findOne({
           'user_id': user._id
         }, function(error, actor) {
-          Collection.makeCollection(Type, 'followers', res, actor.url);
+          collecHelper.makeCollection(Type, 'followers', res, actor.url);
         });
       });
 
@@ -70,11 +75,18 @@ router.get('/following', function(req, res) {
       User.findOne({
         'username': username
       }, function(error, user) {
-        Actor.findOne({
-          'user_id': user._id
-        }, function(error, actor) {
-          var following = Collection.makeCollection(Type, 'following', res, actor.url);
-        });
+        if (!user) {
+          res.send();
+        } else {
+          Actor.findOne({
+            'user_id': user._id
+          }, function(error, actor) {
+            if (error) {
+              throw error;
+            }
+            var following = collecHelper.makeCollection(Type, 'following', res, actor.url);
+          });
+        }
       });
     },
 
@@ -85,7 +97,7 @@ router.get('/following', function(req, res) {
         Actor.findOne({
           'user_id': user._id
         }, function(error, actor) {
-          var following = Collection.makeCollection(Type, 'following', res, actor.url);
+          var following = collecHelper.makeCollection(Type, 'following', res, actor.url);
         });
       });
 
@@ -125,7 +137,6 @@ router.post('/follow', function(req, res) {
 
       };
 
-      console.log(followObject);
 
 
       jsig.sign(followObject, {
