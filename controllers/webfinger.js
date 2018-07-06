@@ -1,11 +1,10 @@
+// Node modules
 var express = require('express');
 var router = express.Router();
-var passport = require('passport');
-var LocalStrategy = require('passport-local').Strategy;
-var User = require('../models/User');
-var Note = require('../models/Note');
+
+// Models
 var Actor = require('../models/activitypub/Actor');
-var http = require('request');
+
 
 var isWebfingerResourceValid = function(value) {
 
@@ -28,8 +27,8 @@ var isWebfingerResourceValid = function(value) {
 
 /* WebFinger*/
 
-router.get('/webfinger', function(request, response, next) {
-  var value = request.query.resource;
+router.get('/webfinger', function(req, res, next) {
+  var value = req.query.resource;
   console.log(isWebfingerResourceValid(value));
   if (isWebfingerResourceValid(value) != false) {
     var actorWithHost = value.substr(5);
@@ -37,13 +36,13 @@ router.get('/webfinger', function(request, response, next) {
 
     var name = actorParts[0];
     var host = actorParts[1];
-    var thisHost = request.get('Host');
+    var thisHost = req.get('Host');
     var notfound = {
       "error": "Actor not found"
     };
 
     if (host != thisHost) {
-      response.json(notfound);
+      res.json(notfound);
     }
 
     Actor.findOne({
@@ -55,7 +54,7 @@ router.get('/webfinger', function(request, response, next) {
 
 
         var res = {
-          "subject": request.query.resource,
+          "subject": req.query.resource,
           "aliases": [actor.url],
           "links": [{
             "rel": "self",
@@ -64,10 +63,10 @@ router.get('/webfinger', function(request, response, next) {
           }]
         };
         //  console.log(' ↳ Sending WebFinger response.\n');
-        response.json(res);
+        res.json(res);
       }
       if (!actor) {
-        response.json(notfound);
+        res.json(notfound);
       }
     });
   } else {

@@ -40,6 +40,19 @@ module.exports.getByUrl = function (actorUrl, callback) {
   }, callback);
 };
 
+
+module.exports.getById = function(id, callback){
+  Actor.findOne({
+    '_id':id
+  }, callback);
+}
+
+module.exports.getLocalByUsername = function(username,callback){
+Actor.findOne({
+  'username':username
+}, callback);
+}
+
 module.exports.getByUserId = function (userId, callback) {
   Actor.findOne({
     'user_id': userId
