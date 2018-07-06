@@ -20,7 +20,7 @@ var follow = require('../../helpers/activitypub/follow');
 var request = require('request');
 var striptags = require('striptags');
 
-router.post('/', function(req, res) {
+router.post('/', function (req, res) {
   var username = req.params.username;
   var activity = req.body;
   console.log(activity);
@@ -30,7 +30,7 @@ router.post('/', function(req, res) {
 
     var receivedNote = activity.object;
 
-    actor.getByUrl(activity.actor, function(error, senderActor) {
+    actor.getByUrl(activity.actor, function (error, senderActor) {
 
       if (senderActor) {
 
@@ -46,7 +46,7 @@ router.post('/', function(req, res) {
           actorObject: senderActor
         });
 
-        Note.createNote(newNote, function(error, note) {
+        Note.createNote(newNote, function (error, note) {
           if (error) {
             console.log("note already in DB");
           }
@@ -59,7 +59,7 @@ router.post('/', function(req, res) {
   /////////////// ACTIVITY FOLLOW
 
   if (activity.type === 'Follow') {
-    actor.getByUrl(activity.object, function(error, actorWhoReceiveFollow) {
+    actor.getByUrl(activity.object, function (error, actorWhoReceiveFollow) {
       console.log('héfollow');
 
       if (actorWhoReceiveFollow) {
@@ -81,11 +81,12 @@ router.post('/', function(req, res) {
           object: activity
         };
 
-        signature.signObject(actorWhoReceiveFollow, acceptObject, function(err, signedAcceptObject) {
+        signature.signObject(actorWhoReceiveFollow, acceptObject, function (err, signedAcceptObject) {
           if (err) {
             return console.log('Signing error:', err);
           }
           console.log('Signed document:', signedAcceptObject);
+
           var keyId = "acct:" + actorWhoReceiveFollow.username + "@" + actorWhoReceiveFollow.host;
           var httpSignatureOptions = {
             algorithm: 'rsa-sha256',
@@ -95,24 +96,16 @@ router.post('/', function(req, res) {
           };
 
 
-          actor.getByUrl(activity.actor, function(error, acceptRecipient) {
+          actor.getByUrl(activity.actor, function (error, acceptRecipient) {
             if (acceptRecipient) {
 
-              console.log(acceptObject);
+              signature.postSignedObject(signedAcceptObject, acceptRecipient, httpSignatureOptions);
 
-              var acceptOptions = {
-                url: acceptRecipient.inbox,
-                json: true,
-                method: 'POST',
-                body: signedAcceptObject,
-                httpSignature: httpSignatureOptions
-              };
-              request(acceptOptions);
             }
 
             if (!acceptRecipient) {
 
-              actor.getRemoteActor(activity.actor, function(error, res, remoteActor) {
+              actor.getRemoteActor(activity.actor, function (error, res, remoteActor) {
 
                 if (!error && res.statusCode === 200) {
 
@@ -131,7 +124,7 @@ router.post('/', function(req, res) {
                     publicKey: remoteActor.publicKey.publicKeyPem
                   });
 
-                  Actor.createRemoteActor(newActor, function(error, actorCreated) {
+                  Actor.createRemoteActor(newActor, function (error, actorCreated) {
                     if (error) {
                       console.log('already in database');
                     } else {
@@ -139,18 +132,8 @@ router.post('/', function(req, res) {
                     }
                   });
 
+                  signature.postSignedObject(signedAcceptObject, newActor, httpSignatureOptions);
 
-                  var acceptOptions = {
-                    url: newActor.inbox,
-                    json: true,
-                    method: 'POST',
-                    headers: {
-                      'Accept': 'application/activity+json'
-                    },
-                    body: signedAcceptObject,
-                    httpSignature: httpSignatureOptions
-                  };
-                  request(acceptOptions);
                 } else {
                   console.log('error');
                 }

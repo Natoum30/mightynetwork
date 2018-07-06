@@ -33,7 +33,7 @@ router.post('/', User.ensureAuthenticate, function (req, res) {
 
     actor.getByUserId(req.user._id, function (error, actorWhoSendNote) {
       if (error) {} else {
-        
+
         follow.getFollowers(actorWhoSendNote.url, function (error, followers) {
 
           var recipients = followers.items;
@@ -50,9 +50,9 @@ router.post('/', User.ensureAuthenticate, function (req, res) {
 
           });
 
-          newNote.id = newNote.actor + '/note/' + newNote._id;
+          //    newNote.id = newNote.actor + '/note/' + newNote._id;
 
-          newNote.published = new Date();
+          //     newNote.published = new Date();
 
           Note.createNote(newNote, function (error, note) {
 
@@ -86,37 +86,20 @@ router.post('/', User.ensureAuthenticate, function (req, res) {
                 } else {
                   actor.getByUrl(recipient, function (error, actorRecipient) {
 
-
                     signature.signObject(actorWhoSendNote, newActivity.toJSON(), function (err, signedNewActivity) {
                       signedNewActivity.published = newActivity.published;
                       signedNewActivity.object.published = newActivity.object.published;
+                      //console.log(signedNewActivity);
+
                       if (err) {
-                        throw err;
+                        return console.log('Signing error:', err);
                       }
-                      console.log('Signed object:', signedNewActivity);
-                      var activityOptions = {
-                        url: actorRecipient.inbox,
-                        json: true,
-                        method: 'POST',
-                        body: signedNewActivity,
-                        httpSignature: httpSignatureOptions
-                      };
-                      //if (activityOptions.url != newNote.actorObject.inbox) {
-                      request(activityOptions, function (error, response, next) {
-                        if (error) {
-                          req.flash('alert', 'An error occured !');
-                        } else {
-                          console.log('coucou');
 
-                        }
-
-                      });
-                      //}
+                      signature.postSignedObject(signedNewActivity, actorRecipient, httpSignatureOptions);
                     });
                   });
                 }
               });
-
               res.redirect('/');
 
 

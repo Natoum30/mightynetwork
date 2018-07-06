@@ -1,6 +1,6 @@
 var Actor = require('../../models/activitypub/Actor');
 var request = require('request');
-
+var User = require('../../models/User');
 
 module.exports.showActorActivityPubObject = function (actor, response) {
   var actorActivityPubObject = {
@@ -57,3 +57,17 @@ module.exports.getRemoteActor = function (actorUrl, callback) {
 
   request.get(actorOptions, callback);
 };
+
+module.exports.getByAddress = function (username, host, callback) {
+  Actor.findOne({
+    'username': username,
+    'host': host
+  }, callback);
+}
+
+module.exports.getCurrent = function (req, callback) {
+  Actor.findOne({
+    'username': req.user.username,
+    'host': req.get('Host')
+  }, callback);
+}

@@ -4,6 +4,9 @@ var router = express.Router();
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 
+// Env
+var instance = process.env.INSTANCE;
+
 // Models
 var Note = require('../models/Note');
 var User = require('../models/User');
@@ -15,7 +18,6 @@ var Follow = require('../models/activitypub/Follow');
 // Helpers
 var actorHelper = require('../helpers/activitypub/actor');
 
-var instance = process.env.INSTANCE;
 
 
 /* Index - Home page */

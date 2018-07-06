@@ -1,8 +1,12 @@
+// Models
 var Follow = require('../../models/activitypub/Follow');
-var collecHelper = require('./collection');
 
+// Helpers 
+var collection = require('./collection');
+var user = require('../user');
+var actor = require('./actor');
 
-module.exports.addFollowers = function(newFollower, actorWhoReceiveFollow) {
+module.exports.addFollowers = function (newFollower, actorWhoReceiveFollow) {
   Follow.update({
     actor: actorWhoReceiveFollow.url,
     type: "Followers"
@@ -10,7 +14,7 @@ module.exports.addFollowers = function(newFollower, actorWhoReceiveFollow) {
     $addToSet: {
       items: newFollower
     }
-  }, function(error, up) {
+  }, function (error, up) {
     if (error) {
       console.log("error");
     }
@@ -20,7 +24,7 @@ module.exports.addFollowers = function(newFollower, actorWhoReceiveFollow) {
   });
 };
 
-module.exports.addFollowing = function(newFollowing, actorFollowing) {
+module.exports.addFollowing = function (newFollowing, actorFollowing) {
   Follow.update({
     actor: actorFollowing,
     type: "Following"
@@ -28,7 +32,7 @@ module.exports.addFollowing = function(newFollowing, actorFollowing) {
     $addToSet: {
       items: newFollowing
     }
-  }, function(error, up) {
+  }, function (error, up) {
 
     if (error) {
       console.log("error");
@@ -40,7 +44,7 @@ module.exports.addFollowing = function(newFollowing, actorFollowing) {
 
 };
 
-module.exports.unFollow = function(actorToUnfollow, unFollower) {
+module.exports.unFollow = function (actorToUnfollow, unFollower) {
   Follow.update({
     actor: actorToUnfollow,
     type: "Followers"
@@ -48,7 +52,7 @@ module.exports.unFollow = function(actorToUnfollow, unFollower) {
     $pull: {
       items: unFollower
     }
-  }, function(error, up) {
+  }, function (error, up) {
     if (error) {
       console.log('error when updating');
     }
@@ -60,4 +64,21 @@ module.exports.getFollowers = function (actorUrl, callback) {
     'actor': actorUrl,
     'type': 'Followers'
   }, callback)
+}
+
+module.exports.jsonPage = function (username, Type, route, res) {
+  user.getByUsername(username, function (error, userFound) {
+    if (!userFound) {
+      console.log("error");
+      var err = {
+        error: 'No user found'
+      };
+      res.json(err);
+    }
+    if (userFound) {
+      actor.getByUserId(userFound._id, function (error, actor) {
+        collection.makeCollection(Type, route, res, actor.url);
+      });
+    }
+  });
 }

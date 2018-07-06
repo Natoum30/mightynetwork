@@ -9,9 +9,9 @@ var Collection = require('../../models/activitypub/Collection');
 
 module.exports.makeCollection = function(Type, route, response, actorUrl) {
   Type.find({
-    'actorUrl': actorUrl,
+    'actor': actorUrl,
   }, function(error, types) {
-    //  console.log(types);
+      console.log(types);
     if (error) {
       console.log('error');
     }
@@ -47,7 +47,7 @@ module.exports.makeCollection = function(Type, route, response, actorUrl) {
       // Collection of Followers
       if (route === "followers") {
         Type.findOne({
-          'actor': actor,
+          'actor': actorUrl,
           'type': 'Followers'
         }, function(error, followers) {
           if (error) {
@@ -56,7 +56,7 @@ module.exports.makeCollection = function(Type, route, response, actorUrl) {
 
             var followersCollection = new Collection({
               "@context": Array("https://www.w3.org/ns/activitystreams", "https://w3id.org/security/v1"),
-              id: actor + '/' + route,
+              id: actorUrl + '/' + route,
               type: "OrderedCollection",
               totalItems: followers.items.length,
               orderedItems: followers.items
@@ -70,7 +70,7 @@ module.exports.makeCollection = function(Type, route, response, actorUrl) {
 
       if (route === "following") {
         Type.findOne({
-          'actor': actor,
+          'actor': actorUrl,
           'type': 'Following'
         }, function(error, following) {
           if (error) {
@@ -79,7 +79,7 @@ module.exports.makeCollection = function(Type, route, response, actorUrl) {
 
             var followingCollection = new Collection({
               "@context": Array("https://www.w3.org/ns/activitystreams", "https://w3id.org/security/v1"),
-              id: actor + '/' + route,
+              id: actorUrl + '/' + route,
               type: "OrderedCollection",
               totalItems: following.items.length,
               orderedItems: following.items

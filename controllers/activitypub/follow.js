@@ -1,3 +1,4 @@
+// Node modules
 var express = require('express');
 var router = express.Router({
   mergeParams: true
@@ -15,112 +16,65 @@ var request = require('request');
 var Activity = require('../../models/activitypub/Activity');
 
 // Helpers
-var collecHelper = require('../../helpers/activitypub/collection');
+var collection = require('../../helpers/activitypub/collection');
+var signature = require('../../helpers/activitypub/signature');
+var actor = require('../../helpers/activitypub/actor');
+var user = require('../../helpers/user');
+var follow = require('../../helpers/activitypub/follow');
 
-
-router.get('/followers', function(req, res) {
+// GET Routes
+router.get('/followers', function (req, res) {
   var username = req.params.username;
   var Type = Follow;
 
   res.format({
-    'text/html': function() {},
-    'application/activity+json': function() {
-
-      User.findOne({
-        'username': username
-      }, function(error, user) {
-        if (!user) {
-          console.log("error");
-          var err = {
-            error: 'No user found'
-          };
-          res.json(err);
-        }
-        if (user) {
-          Actor.findOne({
-            'user_id': user._id
-          }, function(error, actor) {
-            collecHelper.makeCollection(Type, 'followers', res, actor.url);
-          });
-        }
-      });
-
+    'text/html': function () {
+      res.redirect('/users/' + username);
     },
 
-    'application/ld+json': function() {
-      User.findOne({
-        'username': username
-      }, function(error, user) {
-        Actor.findOne({
-          'user_id': user._id
-        }, function(error, actor) {
-          collecHelper.makeCollection(Type, 'followers', res, actor.url);
-        });
-      });
-
+    'application/activity+json': function () {
+      follow.jsonPage(username, Type, 'followers', res);
+    },
+    'application/ld+json': function () {
+      follow.jsonPage(username, Type, 'followers', res);
     },
 
   });
 
 });
 
-router.get('/following', function(req, res) {
+router.get('/following', function (req, res) {
   var username = req.params.username;
   var Type = Follow;
 
   res.format({
-    'text/html': function() {},
-    'application/activity+json': function() {
+    'text/html': function () {
+      res.redirect('/users/' + username);
 
-      User.findOne({
-        'username': username
-      }, function(error, user) {
-        if (!user) {
-          res.send();
-        } else {
-          Actor.findOne({
-            'user_id': user._id
-          }, function(error, actor) {
-            if (error) {
-              throw error;
-            }
-            var following = collecHelper.makeCollection(Type, 'following', res, actor.url);
-          });
-        }
-      });
     },
 
-    'application/ld+json': function() {
-      User.findOne({
-        'username': username
-      }, function(error, user) {
-        Actor.findOne({
-          'user_id': user._id
-        }, function(error, actor) {
-          var following = collecHelper.makeCollection(Type, 'following', res, actor.url);
-        });
-      });
-
+    'application/activity+json': function () {
+      follow.jsonPage(username, Type, 'following', res);
+    },
+    'application/ld+json': function () {
+      follow.jsonPage(username, Type, 'following', res);
     },
 
   });
 });
 
 
-router.post('/follow', function(req, res) {
+// POST Routes
+
+router.post('/follow', User.ensureAuthenticate, function (req, res) {
   var actorWithHost = req.query.resource;
   var actorParts = actorWithHost.split('@');
-  var name = actorParts[0];
+  var username = actorParts[0];
   var host = actorParts[1];
 
-  Actor.findOne({
-    'username': name,
-    'host': host
-  }, function(error, recipient) {
-    Actor.findOne({
-      'username': req.user.username,
-      'host': req.get('Host')
-    }, function(error, sender) {
+  actor.getByAddress(username, host, function (error, actorToFollow) {
+    actor.getCurrent(req, function (error, followSender) {
+
       var followObject = {
         "@context": [
           "https://www.w3.org/ns/activitystreams",
@@ -129,57 +83,40 @@ router.post('/follow', function(req, res) {
             RsaSignature2017: 'https://w3id.org/security#RsaSignature2017'
           }
         ],
-        id: sender.url + "/follows/" + recipient._id,
+        id: followSender.url + "/follows/" + actorToFollow._id,
         type: "Follow",
         summary: '',
-        actor: sender.url,
-        object: recipient.url,
+        actor: followSender.url,
+        object: actorToFollow.url,
 
       };
 
-
-
-      jsig.sign(followObject, {
-        privateKeyPem: sender.privateKey,
-        creator: sender.url,
-        algorithm: 'RsaSignature2017'
-
-      }, function(err, signedFollowObject) {
+      signature.signObject(followSender, followObject, function (err, signedFollowObject) {
         if (err) {
           return console.log('Signing error:', err);
         }
 
         console.log('Signed document:', signedFollowObject);
 
-        var keyId = "acct:" + sender.username + "@" + sender.host;
+        var keyId = "acct:" + followSender.username + "@" + followSender.host;
         console.log(keyId);
+
         var httpSignatureOptions = {
           algorithm: 'rsa-sha256',
           authorizationHeaderName: 'Signature',
           keyId,
-          key: sender.privateKey
+          key: followSender.privateKey
         };
 
-        var followOptions = {
-          url: recipient.inbox,
-          json: true,
-          method: 'POST',
-          headers: {
-            'Accept': 'application/activity+json'
-          },
-          httpSignature: httpSignatureOptions,
-          body: signedFollowObject
-        };
+        signature.postSignedObject(signedFollowObject, actorToFollow, httpSignatureOptions);
 
-        request(followOptions);
-        console.log(res.body);
 
       });
 
 
       req.flash('alert-success', 'Request sent');
-      res.location('/users/account/' + recipient._id);
-      res.redirect('/users/account/' + recipient._id);
+      res.location('/users/account/' + actorToFollow._id);
+      res.redirect('/users/account/' + actorToFollow._id);
     });
 
   });
@@ -187,20 +124,14 @@ router.post('/follow', function(req, res) {
 });
 
 
-router.post('/unfollow', function(req, res) {
+router.post('/unfollow', User.ensureAuthenticate, function (req, res) {
   var actorWithHost = req.query.resource;
   var actorParts = actorWithHost.split('@');
-  var name = actorParts[0];
+  var username = actorParts[0];
   var host = actorParts[1];
 
-  Actor.findOne({
-    'username': name,
-    'host': host
-  }, function(error, recipient) {
-    Actor.findOne({
-      'username': req.user.username,
-      'host': req.get('Host')
-    }, function(error, sender) {
+  actor.getByAdress(username, host, function (error, recipient) {
+    actor.getCurrent(req, function (error, sender) {
       var followObject = {
         id: sender.url + "/follows/" + recipient._id,
         type: "Follow",
@@ -227,12 +158,7 @@ router.post('/unfollow', function(req, res) {
       };
 
 
-      jsig.sign(unfollowObject, {
-        privateKeyPem: sender.privateKey,
-        creator: sender.url,
-        algorithm: 'RsaSignature2017'
-
-      }, function(err, signedUnfollowObject) {
+      signature.signObject(unfollowObject, function (err, signedUnfollowObject) {
         if (err) {
           return console.log('Signing error:', err);
         }
@@ -240,7 +166,7 @@ router.post('/unfollow', function(req, res) {
         console.log('Signed document:', signedUnfollowObject);
 
         var keyId = "acct:" + sender.username + "@" + sender.host;
-        console.log(keyId);
+
         var httpSignatureOptions = {
           algorithm: 'rsa-sha256',
           authorizationHeaderName: 'Signature',
@@ -248,19 +174,8 @@ router.post('/unfollow', function(req, res) {
           key: sender.privateKey
         };
 
-        var unfollowOptions = {
-          url: recipient.inbox,
-          json: true,
-          method: 'POST',
-          headers: {
-            'Accept': 'application/activity+json'
-          },
-          httpSignature: httpSignatureOptions,
-          body: signedUnfollowObject
-        };
+        signature.postSignedObject(signedUnfollowObject, recipient, httpSignatureOptions);
 
-        request(unfollowOptions);
-        console.log(res.body);
 
       });
 
