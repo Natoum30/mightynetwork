@@ -2,7 +2,7 @@ var Actor = require('../../models/activitypub/Actor');
 var request = require('request');
 
 
-module.exports.showActorActivityPubObject = function(actor, response) {
+module.exports.showActorActivityPubObject = function (actor, response) {
   var actorActivityPubObject = {
     "@context": [
       "https://www.w3.org/ns/activitystreams",
@@ -34,13 +34,19 @@ module.exports.showActorActivityPubObject = function(actor, response) {
 };
 
 
-module.exports.getByUrl = function(actorUrl, callback) {
+module.exports.getByUrl = function (actorUrl, callback) {
   Actor.findOne({
     'url': actorUrl
   }, callback);
 };
 
-module.exports.getRemoteActor = function(actorUrl, callback) {
+module.exports.getByUserId = function (userId, callback) {
+  Actor.findOne({
+    'user_id': userId
+  }, callback);
+}
+
+module.exports.getRemoteActor = function (actorUrl, callback) {
   var actorOptions = {
     url: actorUrl,
     headers: {

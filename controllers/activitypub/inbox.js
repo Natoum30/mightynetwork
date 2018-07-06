@@ -12,9 +12,10 @@ var User = require('../../models/User');
 var Activity = require('../../models/activitypub/Activity');
 
 // Helpers
-var actorHelper = require('../../helpers/activitypub/actor');
-var signHelper = require('../../helpers/activitypub/signature');
-var followHelper = require('../../helpers/activitypub/follow');
+var actor = require('../../helpers/activitypub/actor');
+var signature = require('../../helpers/activitypub/signature');
+var follow = require('../../helpers/activitypub/follow');
+
 // Node_modules
 var request = require('request');
 var striptags = require('striptags');
@@ -24,13 +25,12 @@ router.post('/', function(req, res) {
   var activity = req.body;
   console.log(activity);
 
-
+  /////////////// ACTIVITY CREATE
   if (activity.type === 'Create') {
+
     var receivedNote = activity.object;
 
-    Actor.findOne({
-      'url': activity.actor
-    }, function(error, senderActor) {
+    actor.getByUrl(activity.actor, function(error, senderActor) {
 
       if (senderActor) {
 
@@ -45,51 +45,27 @@ router.post('/', function(req, res) {
           id: receivedNote.id,
           actorObject: senderActor
         });
+
         Note.createNote(newNote, function(error, note) {
           if (error) {
             console.log("note already in DB");
           }
         });
-        console.log(newNote);
       }
-      //if (!senderActor  ) {
-      //  var newActor = new Actor({
-      //    username: senderActorObject.username,
-      //    host: senderActorObject.host, // A changer
-      //    url: senderActorObject.url, // Webfinger
-      //    inbox: senderActorObject.inbox,
-      //    outbox: senderActorObject.outbox,
-      //    following: senderActorObject.following,
-      //    followers: senderActorObject.followers,
-      //    publicKey: senderActorObject.publicKey.publicKeyPem
-      //  });
-
-      //  Actor.createRemoteActor(newActor, function(error, act) {
-      //    var newNote = new Note({
-      //      type: 'Note',
-      //      content: receivedNote.content,
-      //      to: receivedNote.to,
-      //      attributedTo: receivedNote.attributedTo,
-      //      published: receivedNote.published,
-      //      actorObject: newActor,
-      //      actor: receivedNote.actor
-      //    });
-      //    Note.createNote(newNote);
-      //    console.log(newNote);
-      //  });
-      //}
     });
-
   }
 
+
+  /////////////// ACTIVITY FOLLOW
+
   if (activity.type === 'Follow') {
-    actorHelper.getByUrl(activity.object, function(error, actorWhoReceiveFollow) {
+    actor.getByUrl(activity.object, function(error, actorWhoReceiveFollow) {
       console.log('héfollow');
 
       if (actorWhoReceiveFollow) {
 
         var newFollower = activity.actor;
-        followHelper.addFollowers(newFollower, actorWhoReceiveFollow);
+        follow.addFollowers(newFollower, actorWhoReceiveFollow);
 
         var acceptObject = {
           "@context": [
@@ -105,7 +81,7 @@ router.post('/', function(req, res) {
           object: activity
         };
 
-        signHelper.signObject(actorWhoReceiveFollow, acceptObject, function(err, signedAcceptObject) {
+        signature.signObject(actorWhoReceiveFollow, acceptObject, function(err, signedAcceptObject) {
           if (err) {
             return console.log('Signing error:', err);
           }
@@ -119,7 +95,7 @@ router.post('/', function(req, res) {
           };
 
 
-          actorHelper.getByUrl(activity.actor, function(error, acceptRecipient) {
+          actor.getByUrl(activity.actor, function(error, acceptRecipient) {
             if (acceptRecipient) {
 
               console.log(acceptObject);
@@ -136,26 +112,30 @@ router.post('/', function(req, res) {
 
             if (!acceptRecipient) {
 
-              actorHelper.getRemoteActor(activity.actor, function(error, res, actor) {
+              actor.getRemoteActor(activity.actor, function(error, res, remoteActor) {
+
                 if (!error && res.statusCode === 200) {
-                  var strUrl = actor.url;
+
+                  var strUrl = remoteActor.url;
                   var splitStrUrl = strUrl.split('/');
                   var actorHost = splitStrUrl[2];
+
                   var newActor = new Actor({
-                    username: actor.preferredUsername,
-                    host: actor.host || actorHost, // A changer
-                    url: actor.id, // Webfinger
-                    inbox: actor.inbox,
-                    outbox: actor.outbox,
-                    following: actor.following,
-                    followers: actor.followers,
-                    publicKey: actor.publicKey.publicKeyPem
+                    username: remoteActor.preferredUsername,
+                    host: remoteActor.host || actorHost, // A changer
+                    url: remoteActor.id, // Webfinger
+                    inbox: remoteActor.inbox,
+                    outbox: remoteActor.outbox,
+                    following: remoteActor.following,
+                    followers: remoteActor.followers,
+                    publicKey: remoteActor.publicKey.publicKeyPem
                   });
-                  Actor.createRemoteActor(newActor, function(error, act) {
+
+                  Actor.createRemoteActor(newActor, function(error, actorCreated) {
                     if (error) {
                       console.log('already in database');
                     } else {
-                      console.log(newActor);
+                      console.log("New actor :", newActor);
                     }
                   });
 
@@ -188,23 +168,24 @@ router.post('/', function(req, res) {
   }
 
 
-  // If I receive a "Accept" activity
+  /////////////// ACTIVITY ACCEPT
 
   if (activity.type === 'Accept') {
-    console.log("HHEO")
     var newFollowing = activity.actor;
     var actorFollowing = activity.object.actor;
 
-    followHelper.addFollowing(newFollowing, actorFollowing);
+    follow.addFollowing(newFollowing, actorFollowing);
 
   }
+
+  /////////////// ACTIVITY UNDO
 
   if (activity.type === 'Undo') {
     console.log('héundo');
     var actorToUnfollow = activity.object.object;
     var unFollower = activity.actor;
 
-    followHelper.unFollow(actorToUnfollow, unFollower);
+    follow.unFollow(actorToUnfollow, unFollower);
   }
 
 });

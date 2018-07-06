@@ -55,6 +55,9 @@ module.exports.unFollow = function(actorToUnfollow, unFollower) {
   });
 };
 
-module.exports.showFollow = function() {
-
-};
+module.exports.getFollowers = function (actorUrl, callback) {
+  Follow.findOne({
+    'actor': actorUrl,
+    'type': 'Followers'
+  }, callback)
+}

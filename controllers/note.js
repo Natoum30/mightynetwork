@@ -1,8 +1,6 @@
 // Node modules
 var express = require('express');
 var router = express.Router();
-var passport = require('passport');
-var LocalStrategy = require('passport-local').Strategy;
 var jsonld = require('jsonld');
 var jsig = require('jsonld-signatures');
 jsig.use('jsonld', jsonld);
@@ -16,12 +14,12 @@ var Activity = require('../models/activitypub/Activity');
 var Follow = require('../models/activitypub/Follow');
 
 // Helpers
-var actorHelper = require('../helpers/activitypub/actor');
-var signHelper = require('../helpers/activitypub/signature');
-
+var actor = require('../helpers/activitypub/actor');
+var signature = require('../helpers/activitypub/signature');
+var follow = require('../helpers/activitypub/follow');
 
 /* Post a Note */
-router.post('/', User.ensureAuthenticate, function(req, res) {
+router.post('/', User.ensureAuthenticate, function (req, res) {
   var content = req.body.content;
   req.checkBody('content').notEmpty();
 
@@ -33,17 +31,10 @@ router.post('/', User.ensureAuthenticate, function(req, res) {
     res.redirect('/');
   } else {
 
-    Actor.findOne({
-      'user_id': req.user._id
-    }, function(error, actorWhoSendNote) {
-      if (error) {
-        ///
-      } else {
-
-        Follow.findOne({
-          'actor': actorWhoSendNote.url,
-          'type': 'Followers'
-        }, function(error, followers) {
+    actor.getByUserId(req.user._id, function (error, actorWhoSendNote) {
+      if (error) {} else {
+        
+        follow.getFollowers(actorWhoSendNote.url, function (error, followers) {
 
           var recipients = followers.items;
 
@@ -63,7 +54,7 @@ router.post('/', User.ensureAuthenticate, function(req, res) {
 
           newNote.published = new Date();
 
-          Note.createNote(newNote, function(error, note) {
+          Note.createNote(newNote, function (error, note) {
 
             if (error) {
               throw "Erreur";
@@ -89,14 +80,14 @@ router.post('/', User.ensureAuthenticate, function(req, res) {
                 key: actorWhoSendNote.privateKey
               };
 
-              recipients.forEach(function(recipient) {
+              recipients.forEach(function (recipient) {
                 if (recipient === "https://www.w3.org/ns/activitystreams#Public") {
                   console.log("Public");
                 } else {
-                  actorHelper.getByUrl(recipient, function(error, actorRecipient) {
+                  actor.getByUrl(recipient, function (error, actorRecipient) {
 
 
-                    signHelper.signObject(actorWhoSendNote, newActivity.toJSON(), function(err, signedNewActivity) {
+                    signature.signObject(actorWhoSendNote, newActivity.toJSON(), function (err, signedNewActivity) {
                       signedNewActivity.published = newActivity.published;
                       signedNewActivity.object.published = newActivity.object.published;
                       if (err) {
@@ -111,7 +102,7 @@ router.post('/', User.ensureAuthenticate, function(req, res) {
                         httpSignature: httpSignatureOptions
                       };
                       //if (activityOptions.url != newNote.actorObject.inbox) {
-                      request(activityOptions, function(error, response, next) {
+                      request(activityOptions, function (error, response, next) {
                         if (error) {
                           req.flash('alert', 'An error occured !');
                         } else {
