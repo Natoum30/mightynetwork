@@ -37,9 +37,19 @@ module.exports.isSignatureVerified = function (fromActor, signedObject, callback
   jsig.verify(signedDocument, options, callback);
 };
 
-module.exports.postSignedObject = function (signedObject, actorRecipient, httpSignatureOptions) {
+module.exports.postSignedObject = function (signedObject, actorRecipient, actorSender) {
 
   // console.log('Signed object:', signedObject);
+  var keyId = "acct:" + actorSender.username + "@" + actorSender.host;
+  console.log(keyId);
+
+  var httpSignatureOptions = {
+    algorithm: 'rsa-sha256',
+    authorizationHeaderName: 'Signature',
+    keyId,
+    key: actorSender.privateKey
+  };
+
 
   var objectOptions = {
     url: actorRecipient.inbox,

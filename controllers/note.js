@@ -72,13 +72,7 @@ router.post('/', User.ensureAuthenticate, function (req, res) {
               });
 
               console.log("ACTIVITY : ", newActivity);
-              var keyId = "acct:" + actorWhoSendNote.username + "@" + actorWhoSendNote.host;
-              var httpSignatureOptions = {
-                algorithm: 'rsa-sha256',
-                authorizationHeaderName: 'Signature',
-                keyId,
-                key: actorWhoSendNote.privateKey
-              };
+       
 
               recipients.forEach(function (recipient) {
                 if (recipient === "https://www.w3.org/ns/activitystreams#Public") {
@@ -95,7 +89,7 @@ router.post('/', User.ensureAuthenticate, function (req, res) {
                         return console.log('Signing error:', err);
                       }
 
-                      signature.postSignedObject(signedNewActivity, actorRecipient, httpSignatureOptions);
+                      signature.postSignedObject(signedNewActivity, actorRecipient, actorWhoSendNote);
                     });
                   });
                 }

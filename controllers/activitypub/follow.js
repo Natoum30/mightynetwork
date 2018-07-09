@@ -97,19 +97,8 @@ router.post('/follow', User.ensureAuthenticate, function (req, res) {
         }
 
         console.log('Signed document:', signedFollowObject);
-
-        var keyId = "acct:" + followSender.username + "@" + followSender.host;
-        console.log(keyId);
-
-        var httpSignatureOptions = {
-          algorithm: 'rsa-sha256',
-          authorizationHeaderName: 'Signature',
-          keyId,
-          key: followSender.privateKey
-        };
-
-        signature.postSignedObject(signedFollowObject, actorToFollow, httpSignatureOptions);
-
+     
+        signature.postSignedObject(signedFollowObject, actorToFollow, followSender);
 
       });
 
@@ -165,17 +154,7 @@ router.post('/unfollow', User.ensureAuthenticate, function (req, res) {
 
         console.log('Signed document:', signedUnfollowObject);
 
-        var keyId = "acct:" + sender.username + "@" + sender.host;
-
-        var httpSignatureOptions = {
-          algorithm: 'rsa-sha256',
-          authorizationHeaderName: 'Signature',
-          keyId,
-          key: sender.privateKey
-        };
-
-        signature.postSignedObject(signedUnfollowObject, recipient, httpSignatureOptions);
-
+        signature.postSignedObject(signedUnfollowObject, recipient, sender);
 
       });
 

@@ -87,19 +87,10 @@ router.post('/', function (req, res) {
           }
           console.log('Signed document:', signedAcceptObject);
 
-          var keyId = "acct:" + actorWhoReceiveFollow.username + "@" + actorWhoReceiveFollow.host;
-          var httpSignatureOptions = {
-            algorithm: 'rsa-sha256',
-            authorizationHeaderName: 'Signature',
-            keyId,
-            key: actorWhoReceiveFollow.privateKey
-          };
-
-
           actor.getByUrl(activity.actor, function (error, acceptRecipient) {
             if (acceptRecipient) {
 
-              signature.postSignedObject(signedAcceptObject, acceptRecipient, httpSignatureOptions);
+              signature.postSignedObject(signedAcceptObject, acceptRecipient, actorWhoReceiveFollow);
 
             }
 
@@ -132,7 +123,7 @@ router.post('/', function (req, res) {
                     }
                   });
 
-                  signature.postSignedObject(signedAcceptObject, newActor, httpSignatureOptions);
+                  signature.postSignedObject(signedAcceptObject, newActor, actorWhoReceiveFollow);
 
                 } else {
                   console.log('error');
