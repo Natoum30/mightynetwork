@@ -50,9 +50,6 @@ router.post('/', User.ensureAuthenticate, function (req, res) {
 
           });
 
-          //    newNote.id = newNote.actor + '/note/' + newNote._id;
-
-          //     newNote.published = new Date();
 
           Note.createNote(newNote, function (error, note) {
 

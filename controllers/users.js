@@ -131,13 +131,7 @@ router.get('/', function (req, res) {
 
 /* My settings routes */
 
-router.get('/notifications', User.ensureAuthenticate, function (req, res) {
-  res.render('notifications', {
-    title: 'Notifications',
-    instance: instance,
-    username: req.user.username
-  });
-});
+
 
 router.get('/actors.json', function (req, res) {
   Actor.find({}, function (error, actors) {
