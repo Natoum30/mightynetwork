@@ -51,11 +51,16 @@ router.post('/', function (req, res, next) {
     json: true
   };
 
-  request.get(webfingerOptions, function (error, res, actorWebfinger) {
+  request.get(webfingerOptions, function (error, webfingerResponse) {
+    if (error || webfingerResponse === undefined) {
+      console.log('Error Webfinger');
+    }
+    var actorWebfinger = webfingerResponse.body;
     if (!error && res.statusCode === 200) {
-      if (actorWebfinger.aliases != undefined) {
-        var actorUrl = actorWebfinger.aliases[0];
 
+      if (actorWebfinger.aliases != undefined) {
+
+        var actorUrl = actorWebfinger.aliases[0];
         var actorOptions = {
           url: actorUrl,
           headers: {
@@ -64,9 +69,16 @@ router.post('/', function (req, res, next) {
           json: true
         };
 
-        request.get(actorOptions, function (error, res, searchedActor) {
-          if (!error && res.statusCode === 200) {
+        request.get(actorOptions, function (error, searchedActorResponse) {
 
+          if (error || searchedActorResponse === undefined) {
+            console.log('Error actor');
+          }
+          
+          var searchedActor = searchedActorResponse.body;
+          
+          if (!error && res.statusCode === 200) {
+            console.log(searchedActor);
             if (userCalledHost === req.get('Host')) {
               actor.getLocalByUsername(userCalledUsername, function (error, localActor) {
                 if (localActor) {

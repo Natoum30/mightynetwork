@@ -25,7 +25,8 @@ var webfingerRouter = require('./controllers/webfinger');
 var inboxRouter = require('./controllers/activitypub/inbox');
 var outboxRouter = require('./controllers/activitypub/outbox');
 var followRouter = require('./controllers/activitypub/follow');
-var notificationRouter = require('./constrollers/notifications');
+var notificationsRouter = require('./controllers/notifications');
+
 var app = express();
 
 
@@ -87,13 +88,13 @@ app.use(function(request, response, next) {
 
 app.use('/', indexRouter);
 app.use('/', noteRouter);
+app.use('/notifications', notificationsRouter);
 app.use('/users', usersRouter);
 app.use('/.well-known', webfingerRouter);
 app.use('/users/:username/outbox', outboxRouter);
 app.use('/inbox', inboxRouter);
 app.use('/users/:username/inbox', inboxRouter);
 app.use('/users/:username', followRouter);
-app.use('/notifications', notificationRouter);
 
 // catch 404 and forward to error handler
 app.use(function(request, response, next) {

@@ -5,32 +5,16 @@ var router = express.Router();
 // Models
 var Actor = require('../models/activitypub/Actor');
 
+// Helpers
+var webfinger = require('../helpers/activitypub/webfinger');
 
-var isWebfingerResourceValid = function(value) {
-
-  var exists = function(value) {
-    return value !== undefined && value !== null;
-  };
-
-  if (!exists(value)) return false;
-  if (value.startsWith('acct:') === false) return false;
-
-  var actorWithHost = value.substr(5);
-  var actorParts = actorWithHost.split('@');
-
-  if (actorParts.length !== 2) return false;
-
-  console.log('ok');
-  //  return sanitizeHost(host, REMOTE_SCHEME.HTTP) === CONFIG.WEBSERVER.HOST;
-};
 
 
 /* WebFinger*/
 
 router.get('/webfinger', function(req, res, next) {
   var value = req.query.resource;
-  console.log(isWebfingerResourceValid(value));
-  if (isWebfingerResourceValid(value) != false) {
+  if (webfinger.isResourceValid(value) != false) {
     var actorWithHost = value.substr(5);
     var actorParts = actorWithHost.split('@');
 
@@ -53,7 +37,7 @@ router.get('/webfinger', function(req, res, next) {
         // Set correct content type.
 
 
-        var res = {
+        var response = {
           "subject": req.query.resource,
           "aliases": [actor.url],
           "links": [{
@@ -63,7 +47,7 @@ router.get('/webfinger', function(req, res, next) {
           }]
         };
         //  console.log(' ↳ Sending WebFinger response.\n');
-        res.json(res);
+        res.json(response);
       }
       if (!actor) {
         res.json(notfound);
