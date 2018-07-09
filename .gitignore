@@ -65,3 +65,4 @@ typings/
 bower_components
 # Data directory
 data/
+.vscode/
