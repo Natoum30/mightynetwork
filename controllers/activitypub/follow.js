@@ -119,7 +119,7 @@ router.post('/unfollow', User.ensureAuthenticate, function (req, res) {
   var username = actorParts[0];
   var host = actorParts[1];
 
-  actor.getByAdress(username, host, function (error, recipient) {
+  actor.getByAddress(username, host, function (error, recipient) {
     actor.getCurrent(req, function (error, sender) {
       var followObject = {
         id: sender.url + "/follows/" + recipient._id,
@@ -129,7 +129,6 @@ router.post('/unfollow', User.ensureAuthenticate, function (req, res) {
         object: recipient.url,
 
       };
-
       var unfollowObject = {
         "@context": [
           "https://www.w3.org/ns/activitystreams",
@@ -145,21 +144,25 @@ router.post('/unfollow', User.ensureAuthenticate, function (req, res) {
         object: followObject,
 
       };
+      console.log(sender.url);
+      console.log(recipient.url);
+      follow.unFollow(recipient.url, sender.url);
 
 
-      signature.signObject(unfollowObject, function (err, signedUnfollowObject) {
+      signature.signObject(sender, unfollowObject, function (err, signedUnfollowObject) {
         if (err) {
-          return console.log('Signing error:', err);
+          console.log('Signing error:', err);
         }
 
         console.log('Signed document:', signedUnfollowObject);
 
         signature.postSignedObject(signedUnfollowObject, recipient, sender);
 
+
       });
 
 
-      req.flash('alert-success', 'Unfollow sent');
+      req.flash('alert-success', 'Unfollowed user');
       res.location('/users/account/' + recipient._id);
       res.redirect('/users/account/' + recipient._id);
     });

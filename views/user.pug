@@ -6,13 +6,15 @@ block content
       !=messages()
     h2 
       a(href=authorUrl) #{author}@#{host}
-    if user
-      form(action="/users/"+ author + "/follow?resource=" + author + '@' + host, method="POST")
-        .form-group
-          button(type="submit",placeholder="follow",name="follow") Follow
-      form(action="/users/"+ author + "/unfollow?resource=" + author + '@' + host, method="POST")
-        .form-group
-          button(type="submit",placeholder="unfollow",name="unfollow") Unfollow
+    if user && followState != null
+      if !followState 
+        form(action="/users/"+ author + "/follow?resource=" + author + '@' + host, method="POST")
+          .form-group
+            button(type="submit",placeholder="follow",name="follow") Follow
+      if followState
+        form(action="/users/"+ author + "/unfollow?resource=" + author + '@' + host, method="POST")
+          .form-group
+            button(type="submit",placeholder="unfollow",name="unfollow") Unfollow
     each note in notes
       .jumbotron
         p 

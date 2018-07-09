@@ -47,39 +47,3 @@ module.exports.createActivity = function(newActivity, callback) {
   newActivity.save(callback);
 };
 
-
-//
-//module.exports.postActivity = function(message,callback){
-//  var destInbox = 'http://localhost:3000/users/nath/inbox';
-//  var postOptions = {
-//    url:destInbox,
-//    headers: {'content-type' : 'application/activity+json'},
-//    json : true,
-//    form : message
-//  };
-//  http.post(postOptions, callback);
-//};
-//module.exports.postActivity = function(newActivity,callback){
-//  var dest = newActivity.to;
-//  dest.forEach(function(destUrl){
-//    if (destUrl != 'https://www.w3.org/ns/activitystreams#Public') {
-//      var destOptions ={
-//        url:destUrl,
-//        headers:{
-//          'Accept' : 'application/activity+json'
-//        },
-//        json:true,
-//        form : newActivity.toJSON()
-//      };
-//      http.get(destOptions, function(error,res,dest){
-//        var postOptions = {
-//          url:dest.inbox,
-//          headers: {'content-type' : 'application/activity+json'},
-//          json : true
-//        };
-//        http.post(postOptions, callback);
-//      });
-//    }
-//  });
-//
-//};

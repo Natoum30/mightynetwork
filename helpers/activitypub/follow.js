@@ -1,6 +1,6 @@
 // Models
 var Follow = require('../../models/activitypub/Follow');
-
+var User = require('../../models/User');
 // Helpers 
 var collection = require('./collection');
 var user = require('../user');
@@ -55,8 +55,22 @@ module.exports.unFollow = function (actorToUnfollow, unFollower) {
   }, function (error, up) {
     if (error) {
       console.log('error when updating');
-    }
+    } else { console.log("Updated!");}
   });
+
+  Follow.update({
+    actor: unFollower,
+    type: "Following"
+  }, {
+    $pull: {
+      items: actorToUnfollow
+    }
+  }, function (error, up) {
+    if (error) {
+      console.log('error when updating');
+    } else { console.log("Updated!");}
+  });
+  
 };
 
 module.exports.getFollowers = function (actorUrl, callback) {
@@ -65,6 +79,20 @@ module.exports.getFollowers = function (actorUrl, callback) {
     'type': 'Followers'
   }, callback)
 }
+
+var getFollowing = module.exports.getFollowing = function (actorUrl, callback) {
+  Follow.findOne({
+    'actor': actorUrl,
+    'type': 'Following'
+  }, callback)
+}
+
+module.exports.amIFollowing = function (actorUrl, req, callback) {
+ 
+  callback;
+
+}
+
 
 module.exports.jsonPage = function (username, Type, route, res) {
   user.getByUsername(username, function (error, userFound) {

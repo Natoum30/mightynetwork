@@ -13,7 +13,7 @@ var Actor = require('../models/activitypub/Actor');
 var actor = require('../helpers/activitypub/actor');
 var user = require('../helpers/user');
 var signHelper = require('../helpers/activitypub/signature');
-var followHelper = require('../helpers/activitypub/follow');
+var follow = require('../helpers/activitypub/follow');
 
 var instance = process.env.INSTANCE;
 
@@ -259,25 +259,56 @@ router.get('/account/:id', function (req, res) {
 
         'text/html': function () {
           // Show outbox activities
-          Note.find({
-              'attributedTo': remoteActor.url
-            },
-            null, {
-              sort: {
-                published: -1
-              }
-            },
+          var state = null;
+          if (req.isAuthenticated() === true) {
+            actor.getCurrent(req, function (error, thisActor) {
+        if (error) {console.log(error);}
+           //   if (thisActor.url === remoteActor.url) {
+           //     state = null
+           //   } else {
+        //
+                follow.getFollowing(thisActor.url, function (error, followingObject) {
+                  var followingList = followingObject.items;
+        
+                  var stateFollow = followingList.indexOf(remoteActor.url);
+                  if (stateFollow === -1) {
+                    state = false;
+                  }
+                  if (stateFollow > 0 || stateFollow === 0) {
+                    state = true;
+                  };
 
-            function (error, notes) {
-              res.render('user', {
-                title: remoteActor.username,
-                notes: notes,
-                author: remoteActor.username,
-                host: remoteActor.host,
-                authorUrl: remoteActor.url,
-                instance: instance
-              });
-            });
+                  console.log(state);
+                  Note.find({
+                    'attributedTo': remoteActor.url
+                  },
+                  null, {
+                    sort: {
+                      published: -1
+                    }
+                  },
+      
+                  function (error, notes) {
+                    res.render('user', {
+                      title: remoteActor.username,
+                      notes: notes,
+                      author: remoteActor.username,
+                      host: remoteActor.host,
+                      authorUrl: remoteActor.url,
+                      instance: instance,
+                      followState : state
+                    });
+                  });
+        
+                });
+              }
+           // }
+          );
+          } else {
+            console.log('Not authentified');
+            console.log(state);
+          }
+          
         },
 
         'application/activity+json': function () {

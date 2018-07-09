@@ -50,7 +50,3 @@ module.exports.createNote = function(newNote, callback) {
   newNote.save(callback);
 };
 
-
-module.exports.getNoteById = function(id, callback) {
-  Note.findById(id, callback);
-};

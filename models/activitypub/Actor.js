@@ -55,7 +55,6 @@ var actorSchema = new Schema({
   },
   privateKey: {
     type: String,
-    unique: true,
     required:false
   },
   created_at: Date
