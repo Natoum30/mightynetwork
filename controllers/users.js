@@ -12,6 +12,7 @@ var Actor = require('../models/activitypub/Actor');
 // Helpers
 var actor = require('../helpers/activitypub/actor');
 var user = require('../helpers/user');
+var note = require('../helpers/note');
 var signHelper = require('../helpers/activitypub/signature');
 var follow = require('../helpers/activitypub/follow');
 
@@ -74,9 +75,9 @@ router.post('/', function (req, res, next) {
           if (error || searchedActorResponse === undefined) {
             console.log('Error actor');
           }
-          
+
           var searchedActor = searchedActorResponse.body;
-          
+
           if (!error && res.statusCode === 200) {
             console.log(searchedActor);
             if (userCalledHost === req.get('Host')) {
@@ -107,6 +108,7 @@ router.post('/', function (req, res, next) {
                   });
 
                   Actor.createRemoteActor(newActor);
+
                   res.redirect('users/account/' + newActor._id);
 
                 }
@@ -193,25 +195,64 @@ router.get('/:username', function (req, res, next) {
 
             'text/html': function () {
               // Show outbox activities
-              Note.find({
-                  'attributedTo': localActor.url
-                },
-                null, {
-                  sort: {
-                    published: -1
-                  }
-                },
+              var state = null;
 
-                function (error, notes) {
-                  res.render('user', {
-                    title: localActor.username,
-                    notes: notes,
-                    author: localActor.username,
-                    host: localActor.host,
-                    authorUrl: localActor.url,
-                    instance: instance
+              if (req.isAuthenticated() === true) {
+                actor.getCurrent(req, function (error, thisActor) {
+                  if (error) {
+                    console.log(error);
+                  }
+
+                  follow.getFollowing(thisActor.url, function (error, followingObject) {
+
+                    var followingList = followingObject.items;
+
+                    var stateFollow = followingList.indexOf(localActor.url);
+                    if (thisActor.url === localActor.url) {
+                      state = null;
+                    }
+                    if (stateFollow === -1 && thisActor.url != localActor.url) {
+                      state = false;
+                    }
+                    if (stateFollow > 0 || stateFollow === 0) {
+                      state = true;
+                    };
+
+
+                    note.showNotes(localActor.url,
+                      function (error, notes) {
+                        res.render('user', {
+                          title: localActor.username,
+                          notes: notes,
+                          author: localActor.username,
+                          host: localActor.host,
+                          authorUrl: localActor.url,
+                          instance: instance,
+                          followState: state,
+                          isLocal: true
+                        });
+                      });
                   });
+
                 });
+              } else {
+                console.log('Not authentified');
+                console.log(state);
+
+                note.showNotes(localActor.url,
+                  function (error, notes) {
+                    res.render('user', {
+                      title: localActor.username,
+                      notes: notes,
+                      author: localActor.username,
+                      host: localActor.host,
+                      authorUrl: localActor.url,
+                      instance: instance,
+                      followState: null,
+                      isLocal: true
+                    });
+                  });
+              }
 
             },
 
@@ -237,8 +278,18 @@ router.get('/:username', function (req, res, next) {
 
 router.get('/account/:id', function (req, res) {
   var id = req.params.id;
-  
+
   actor.getById(id, function (error, remoteActor) {
+    var isLocal = null;
+    var host = req.get('Host');
+
+    if (remoteActor.host === host) {
+      isLocal = true;
+    } else {
+      isLocal = false;
+    }
+
+
     if (error) {
       console.log('error');
     }
@@ -258,37 +309,34 @@ router.get('/account/:id', function (req, res) {
       res.format({
 
         'text/html': function () {
-          // Show outbox activities
           var state = null;
           if (req.isAuthenticated() === true) {
             actor.getCurrent(req, function (error, thisActor) {
-        if (error) {console.log(error);}
-           //   if (thisActor.url === remoteActor.url) {
-           //     state = null
-           //   } else {
-        //
-                follow.getFollowing(thisActor.url, function (error, followingObject) {
-                  var followingList = followingObject.items;
-        
-                  var stateFollow = followingList.indexOf(remoteActor.url);
-                  if (stateFollow === -1) {
-                    state = false;
-                  }
-                  if (stateFollow > 0 || stateFollow === 0) {
-                    state = true;
-                  };
+              if (error) {
+                console.log(error);
+              }
 
-                  console.log(state);
-                  Note.find({
-                    'attributedTo': remoteActor.url
-                  },
-                  null, {
-                    sort: {
-                      published: -1
-                    }
-                  },
-      
+              follow.getFollowing(thisActor.url, function (error, followingObject) {
+                var followingList = followingObject.items;
+
+                var stateFollow = followingList.indexOf(remoteActor.url);
+                if (thisActor.url === remoteActor.url) {
+                  state = null;
+                }
+                if (stateFollow === -1 && thisActor.url != remoteActor.url) {
+                  state = false;
+                }
+                if (stateFollow === -1) {
+                  state = false;
+                }
+                if (stateFollow > 0 || stateFollow === 0) {
+                  state = true;
+                };
+
+
+                note.showNotes(remoteActor.url,
                   function (error, notes) {
+
                     res.render('user', {
                       title: remoteActor.username,
                       notes: notes,
@@ -296,19 +344,29 @@ router.get('/account/:id', function (req, res) {
                       host: remoteActor.host,
                       authorUrl: remoteActor.url,
                       instance: instance,
-                      followState : state
+                      followState: state,
+                      isLocal: isLocal
                     });
                   });
-        
-                });
-              }
-           // }
-          );
+              });
+            });
           } else {
             console.log('Not authentified');
-            console.log(state);
+            note.showNotes(remoteActor.url,
+              function (error, notes) {
+                res.render('user', {
+                  title: remoteActor.username,
+                  notes: notes,
+                  author: remoteActor.username,
+                  host: remoteActor.host,
+                  authorUrl: remoteActor.url,
+                  instance: instance,
+                  followState: null,
+                  isLocal: isLocal
+                });
+              });
           }
-          
+
         },
 
         'application/activity+json': function () {

@@ -7,6 +7,9 @@ var jsonld = require('jsonld');
 var jsig = require('jsonld-signatures');
 jsig.use('jsonld', jsonld);
 
+// Env
+var instance = process.env.INSTANCE;
+
 // Models
 var Collection = require('../../models/activitypub/Collection');
 var Actor = require('../../models/activitypub/Actor');
@@ -22,6 +25,7 @@ var actor = require('../../helpers/activitypub/actor');
 var user = require('../../helpers/user');
 var follow = require('../../helpers/activitypub/follow');
 
+
 // GET Routes
 router.get('/followers', function (req, res) {
   var username = req.params.username;
@@ -29,7 +33,13 @@ router.get('/followers', function (req, res) {
 
   res.format({
     'text/html': function () {
-      res.redirect('/users/' + username);
+      
+      res.render('follow', {
+        title: username+"'s followers",
+        type:"followers",
+        username:username,
+        instance:instance
+      });;
     },
 
     'application/activity+json': function () {
@@ -49,8 +59,12 @@ router.get('/following', function (req, res) {
 
   res.format({
     'text/html': function () {
-      res.redirect('/users/' + username);
-
+      res.render('follow', {
+        title: username+"'s following",
+        type:"following",
+        username:username,
+        instance:instance
+      });;
     },
 
     'application/activity+json': function () {

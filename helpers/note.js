@@ -14,3 +14,16 @@ var Follow = require('../models/activitypub/Follow');
 // Helpers
 var actor = require('./activitypub/actor');
 var signature = require('./activitypub/signature');
+
+
+module.exports.showNotes = function(actorUrl,callback) {
+    Note.find({
+        'attributedTo': actorUrl
+      },
+      null, {
+        sort: {
+          published: -1
+        }
+      },
+      callback
+    }

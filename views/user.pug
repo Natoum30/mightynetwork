@@ -6,22 +6,36 @@ block content
       !=messages()
     h2 
       a(href=authorUrl) #{author}@#{host}
+    if isLocal
+      p(style="text-align:right") 
+      span ( 
+      a(href=authorUrl + "/followers") followers
+      span  / 
+      a(href=authorUrl + "/following") following 
+      span )
+    if !isLocal
+      p ( Remote actor ) 
+      
     if user && followState != null
       if !followState 
         form(action="/users/"+ author + "/follow?resource=" + author + '@' + host, method="POST")
           .form-group
-            button(type="submit",placeholder="follow",name="follow") Follow
+            button(type="submit", class="follow", placeholder="follow",name="follow") Follow
       if followState
         form(action="/users/"+ author + "/unfollow?resource=" + author + '@' + host, method="POST")
           .form-group
-            button(type="submit",placeholder="unfollow",name="unfollow") Unfollow
+            button(type="submit", class="following", placeholder="unfollow",name="unfollow") 
+              span Following ✓
+    if followState=null 
+      p Coucou
+
     each note in notes
       .jumbotron
         p 
           a(href= authorUrl)  #{author}
           span 
           small (#{author}@#{host})
-        p= note.content 
+        p= note.content  
         small 
           a(href='/users/'+ author + '/note/' + note.id) clic
         p.date= note.published

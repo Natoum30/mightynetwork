@@ -114,6 +114,8 @@ textarea {
 }
 button {
   overflow: visible;
+  width:130px;
+  height: 30px
 }
 button,
 select {
@@ -135,6 +137,53 @@ input::-moz-focus-inner {
   padding: 0;
   border: 0;
 }
+.follow {
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  padding: 5px;
+  border: 0;
+  background-color: white;
+
+}
+.follow:hover{
+  background-color:#9ed08a;
+  border-radius: 4px;
+}
+
+.follow:hover:before{
+  
+}
+
+.following {
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  padding: 5px;
+  border: 0;
+  background-color:#9ed08a;
+  border-radius: 2px;
+
+
+}
+.following:hover{
+  background-color:white;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  padding: 0;
+  border: 0;
+}
+
+.following:hover span {
+  
+ display: none
+}
+.following:hover:before  {
+  content: "Unfollow ? ";
+}
+
+
 input {
   line-height: normal;
 }
@@ -170,6 +219,9 @@ legend {
 }
 textarea {
   overflow: auto;
+  width:100%;
+  height:100px;
+  resize:none;
 }
 optgroup {
   font-weight: bold;
