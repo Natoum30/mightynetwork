@@ -20,8 +20,8 @@ block content
             small (#{note.actorObject.username}@#{note.actorObject.host})
           p= note.content 
           small
-            a(href= note.id) clic
-          p.date=note.published
+            a(href= note.id) 
+              p.date=note.published
       else
         .jumbotron
           p No notes yet

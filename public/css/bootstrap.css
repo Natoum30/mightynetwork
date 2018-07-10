@@ -137,7 +137,9 @@ input::-moz-focus-inner {
   padding: 0;
   border: 0;
 }
-.follow {
+
+
+.follow .follow:hover:before{
   margin: 0;
   font: inherit;
   color: inherit;
@@ -146,14 +148,12 @@ input::-moz-focus-inner {
   background-color: white;
 
 }
-.follow:hover{
+.follow:hover {
   background-color:#9ed08a;
   border-radius: 4px;
 }
 
-.follow:hover:before{
-  
-}
+
 
 .following {
   margin: 0;
@@ -183,6 +183,21 @@ input::-moz-focus-inner {
   content: "Unfollow ? ";
 }
 
+
+
+#mainUserPage {
+  display: flex;
+  align-items: center;
+}
+#mainUserPage > span {
+  content:"";
+  flex: 1 1 auto;
+  font-size:15px;
+  text-align:right;
+  margin-left: 10px;
+  margin-right: 5px;
+  margin-top: 4px;
+}
 
 input {
   line-height: normal;

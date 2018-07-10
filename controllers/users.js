@@ -55,79 +55,90 @@ router.post('/', function (req, res, next) {
   request.get(webfingerOptions, function (error, webfingerResponse) {
     if (error || webfingerResponse === undefined) {
       console.log('Error Webfinger');
+      req.flash('error', "404 - Host not found");
+      res.location('/users/');
+      res.redirect('/users/');
     }
-    var actorWebfinger = webfingerResponse.body;
-    if (!error && res.statusCode === 200) {
+    if (webfingerResponse != undefined) {
+      var actorWebfinger = webfingerResponse.body;
+      if (actorWebfinger === undefined) {
+        req.flash('error', "404 - Actor not found");
+        res.location('/users/');
+      }
+      if (!error && res.statusCode === 200) {
 
-      if (actorWebfinger.aliases != undefined) {
+        if (actorWebfinger.aliases != undefined) {
 
-        var actorUrl = actorWebfinger.aliases[0];
-        var actorOptions = {
-          url: actorUrl,
-          headers: {
-            'Accept': 'application/activity+json'
-          },
-          json: true
-        };
+          var actorUrl = actorWebfinger.aliases[0];
+          var actorOptions = {
+            url: actorUrl,
+            headers: {
+              'Accept': 'application/activity+json'
+            },
+            json: true
+          };
 
-        request.get(actorOptions, function (error, searchedActorResponse) {
+          request.get(actorOptions, function (error, searchedActorResponse) {
 
-          if (error || searchedActorResponse === undefined) {
-            console.log('Error actor');
-          }
-
-          var searchedActor = searchedActorResponse.body;
-
-          if (!error && res.statusCode === 200) {
-            console.log(searchedActor);
-            if (userCalledHost === req.get('Host')) {
-              actor.getLocalByUsername(userCalledUsername, function (error, localActor) {
-                if (localActor) {
-                  res.redirect('users/account/' + localActor._id);
-                }
-              });
-
-            } else {
-
-              actor.getByUrl(searchedActor.id, function (error, remoteActor) {
-                if (remoteActor) {
-                  res.redirect('users/account/' + remoteActor._id);
-                }
-                if (!remoteActor) {
-
-                  console.log("Creating new actor...");
-                  var newActor = new Actor({
-                    username: searchedActor.preferredUsername,
-                    host: userCalledHost, // A changer
-                    url: searchedActor.id, // Webfinger
-                    inbox: searchedActor.inbox,
-                    outbox: searchedActor.outbox,
-                    following: searchedActor.following,
-                    followers: searchedActor.followers,
-                    publicKey: searchedActor.publicKey.publicKeyPem
-                  });
-
-                  Actor.createRemoteActor(newActor);
-
-                  res.redirect('users/account/' + newActor._id);
-
-                }
-              });
-
+            if (error || searchedActorResponse === undefined) {
+              console.log('Error actor');
             }
-          } else {
-            console.log('error');
-          }
-        });
+
+            var searchedActor = searchedActorResponse.body;
+
+            if (!error && res.statusCode === 200) {
+              console.log(searchedActor);
+              if (userCalledHost === req.get('Host')) {
+                actor.getLocalByUsername(userCalledUsername, function (error, localActor) {
+                  if (localActor) {
+                    res.redirect('users/account/' + localActor._id);
+                  }
+                });
+
+              } else {
+
+                actor.getByUrl(searchedActor.id, function (error, remoteActor) {
+                  if (remoteActor) {
+                    res.redirect('users/account/' + remoteActor._id);
+                  }
+                  if (!remoteActor) {
+
+                    console.log("Creating new actor...");
+                    var newActor = new Actor({
+                      username: searchedActor.preferredUsername,
+                      host: userCalledHost, // A changer
+                      url: searchedActor.id, // Webfinger
+                      inbox: searchedActor.inbox,
+                      outbox: searchedActor.outbox,
+                      following: searchedActor.following,
+                      followers: searchedActor.followers,
+                      publicKey: searchedActor.publicKey.publicKeyPem
+                    });
+
+                    Actor.createRemoteActor(newActor, function (error, newRemoteActor) {
+                      if (error) {
+                        console.log("error creating actor");
+                      }
+                      res.redirect('users/account/' + newRemoteActor._id);
+                    });
+                  }
+                });
+
+              }
+            } else {
+              console.log('error');
+            }
+          });
+        } else {
+          req.flash('error', actorWebfinger.error);
+          res.location('/users/');
+          res.redirect('/users/');
+        }
       } else {
-        req.flash('error', actorWebfinger.error);
+        req.flash('error', 'Could not fetch data');
         res.location('/users/');
         res.redirect('/users/');
       }
-    } else {
-      req.flash('error', 'Could not fetch data');
-      res.location('/users/');
-      res.redirect('/users/');
     }
   });
 
@@ -289,7 +300,6 @@ router.get('/account/:id', function (req, res) {
       isLocal = false;
     }
 
-
     if (error) {
       console.log('error');
     }
@@ -326,13 +336,11 @@ router.get('/account/:id', function (req, res) {
                 if (stateFollow === -1 && thisActor.url != remoteActor.url) {
                   state = false;
                 }
-                if (stateFollow === -1) {
-                  state = false;
-                }
+
                 if (stateFollow > 0 || stateFollow === 0) {
                   state = true;
                 };
-
+                console.log("STATE", state);
 
                 note.showNotes(remoteActor.url,
                   function (error, notes) {
@@ -387,7 +395,7 @@ router.get('/account/:id', function (req, res) {
 });
 
 
-router.get('/:username/note/:id', User.ensureAuthenticate, function (req, res) {
+router.get('/:username/note/:id', function (req, res) {
   var username = req.params.username;
   Note.findById(req.params.id, function (error, note) {
     res.render('note', {
