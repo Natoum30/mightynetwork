@@ -3,6 +3,8 @@ extends layout
 block content
   .container
     h2 
-     a(href="") #{username}
+     a(href=authorUrl) #{username}
      span 's #{type}
-    .jumbotron
+    each item in list
+        .jumbotron
+            a(href=item) #{item}

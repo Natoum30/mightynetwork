@@ -33,13 +33,48 @@ router.get('/followers', function (req, res) {
 
   res.format({
     'text/html': function () {
+
+      user.getByUsername(username, function(error,localUser){
+        if (!localUser) {
+          res.format({
+            'text/html': function () {
+              res.render('error', {
+                message: 'Not a local user',
+                status: '404',
+              });
+            },
+    
+            'application/activity+json': function () {
+              res.send({
+                'error': 'Not a local user'
+              });
+            }
+          });
+        } else {
+          actor.getByUserId(localUser._id, function(error,localActor){
+            if(error) {
+              console.log("Error when rendering local actor");
+            }
+            if (localActor){
+              follow.getFollowers(localActor.url, function(error,followersObject){
+                var followersList = followersObject.items;
+
+                res.render('follow', {
+                  title: localActor.username+"'s followers",
+                  list:followersList,
+                  authorUrl:localActor.url,
+                  type:"followers",
+                  username:localActor.username,
+                  instance:instance
+              })
+              
+              });
+            }
+          })
+        }
+      })
+
       
-      res.render('follow', {
-        title: username+"'s followers",
-        type:"followers",
-        username:username,
-        instance:instance
-      });;
     },
 
     'application/activity+json': function () {
@@ -59,12 +94,46 @@ router.get('/following', function (req, res) {
 
   res.format({
     'text/html': function () {
-      res.render('follow', {
-        title: username+"'s following",
-        type:"following",
-        username:username,
-        instance:instance
-      });;
+      user.getByUsername(username, function(error,localUser){
+        if (!localUser) {
+          res.format({
+            'text/html': function () {
+              res.render('error', {
+                message: 'Not a local user',
+                status: '404',
+              });
+            },
+    
+            'application/activity+json': function () {
+              res.send({
+                'error': 'Not a local user'
+              });
+            }
+          });
+        } else {
+          actor.getByUserId(localUser._id, function(error,localActor){
+            if(error) {
+              console.log("Error when rendering local actor");
+            }
+            if (localActor){
+              follow.getFollowing(localActor.url, function(error,followingObject){
+                var followingList = followingObject.items;
+
+                res.render('follow', {
+                  title: localActor.username+"'s following",
+                  list:followingList,
+                  authorUrl:localActor.url,
+                  type:"following",
+                  username:localActor.username,
+                  instance:instance
+              })
+              
+              });
+            }
+          })
+        }
+      })
+
     },
 
     'application/activity+json': function () {

@@ -26,4 +26,5 @@ module.exports.showNotes = function(actorUrl,callback) {
         }
       },
       callback
-    }
+    );
+}

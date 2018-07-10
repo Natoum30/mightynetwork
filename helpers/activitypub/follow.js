@@ -80,7 +80,7 @@ module.exports.getFollowers = function (actorUrl, callback) {
   }, callback)
 }
 
-var getFollowing = module.exports.getFollowing = function (actorUrl, callback) {
+module.exports.getFollowing = function (actorUrl, callback) {
   Follow.findOne({
     'actor': actorUrl,
     'type': 'Following'
